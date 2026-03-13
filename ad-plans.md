@@ -1,20 +1,26 @@
 # 📋 Ad Plans — 廣告方案管理 API
 
-> **Prefix：** `/api/ad-plans`
-> 查詢端點（`GET`）為**公開 API**，不需要驗證。
-> 建立、更新、刪除需要 🔒 `Authorization: Bearer {token}`。
+> **讀取端點為公開 API**，不需要驗證。
+> **建立、更新、刪除為管理員專屬**，需要 `auth:admin` Guard 🔒。
 
 ---
 
 ## 端點索引
 
-| 方法     | 路徑                 | 說明         | 需要驗證 |
-| -------- | -------------------- | ------------ | -------- |
-| `GET`    | `/api/ad-plans`      | 廣告方案列表 | ❌       |
-| `GET`    | `/api/ad-plans/{id}` | 廣告方案詳情 | ❌       |
-| `POST`   | `/api/ad-plans`      | 建立廣告方案 | ✅       |
-| `PUT`    | `/api/ad-plans/{id}` | 更新廣告方案 | ✅       |
-| `DELETE` | `/api/ad-plans/{id}` | 刪除廣告方案 | ✅       |
+### 公開端點（無需驗證）
+
+| 方法  | 路徑                 | 說明         |
+| ----- | -------------------- | ------------ |
+| `GET` | `/api/ad-plans`      | 廣告方案列表 |
+| `GET` | `/api/ad-plans/{id}` | 廣告方案詳情 |
+
+### 管理員端點（auth:admin 🔒）
+
+| 方法     | 路徑                      | 說明         |
+| -------- | ------------------------- | ------------ |
+| `POST`   | `/api/admin/ad-plans`     | 建立廣告方案 |
+| `PUT`    | `/api/admin/ad-plans/{id}`| 更新廣告方案 |
+| `DELETE` | `/api/admin/ad-plans/{id}`| 刪除廣告方案 |
 
 ---
 
@@ -100,7 +106,7 @@ GET /api/ad-plans?status=active&category=meeting-management
 
 ---
 
-## POST `/api/ad-plans` — 建立廣告方案 🔒
+## POST `/api/admin/ad-plans` — 建立廣告方案 🔒 Admin
 
 **Content-Type：** `multipart/form-data` 或 `application/json`
 
@@ -117,7 +123,7 @@ GET /api/ad-plans?status=active&category=meeting-management
 | `status`        | `string`      | ❌   | `active`（預設）/ `inactive`                                            |
 | `features`      | `array`       | ❌   | 方案特色列表（JSON 陣列）                                               |
 | `image`         | `file/string` | ❌   | 方案圖片（支援上傳檔案或 base64，格式：jpeg/jpg/png/gif/webp，max:2MB） |
-| `options`       | `array`       | ❌   | 方案選項列表（見 options 欄位說明）                                     |
+| `options`       | `array`       | ❌   | 方案選項列表（見下方 options 欄位說明）                                 |
 
 **`options` 子欄位**
 
@@ -159,15 +165,15 @@ GET /api/ad-plans?status=active&category=meeting-management
 
 ```json
 {
-  "success": true,
-  "message": "廣告方案建立成功",
-  "data": {
-    "id": 5,
-    "name": "企業專業方案",
-    "price": "2999.00",
-    "options": [ ... ],
-    "created_at": "2026-03-12 11:00:00"
-  }
+    "success": true,
+    "message": "廣告方案建立成功",
+    "data": {
+        "id": 5,
+        "name": "企業專業方案",
+        "price": "2999.00",
+        "options": [ ... ],
+        "created_at": "2026-03-13 11:00:00"
+    }
 }
 ```
 
@@ -180,7 +186,7 @@ GET /api/ad-plans?status=active&category=meeting-management
 
 ---
 
-## PUT `/api/ad-plans/{id}` — 更新廣告方案 🔒
+## PUT `/api/admin/ad-plans/{id}` — 更新廣告方案 🔒 Admin
 
 **Path Parameters**
 
@@ -205,7 +211,7 @@ GET /api/ad-plans?status=active&category=meeting-management
     "data": {
         "id": 5,
         "name": "企業專業方案 Pro",
-        "updated_at": "2026-03-12 12:00:00"
+        "updated_at": "2026-03-13 12:00:00"
     }
 }
 ```
@@ -220,7 +226,7 @@ GET /api/ad-plans?status=active&category=meeting-management
 
 ---
 
-## DELETE `/api/ad-plans/{id}` — 刪除廣告方案 🔒
+## DELETE `/api/admin/ad-plans/{id}` — 刪除廣告方案 🔒 Admin
 
 **Path Parameters**
 
@@ -233,8 +239,7 @@ GET /api/ad-plans?status=active&category=meeting-management
 ```json
 {
     "success": true,
-    "message": "廣告方案刪除成功",
-    "data": null
+    "message": "廣告方案刪除成功"
 }
 ```
 

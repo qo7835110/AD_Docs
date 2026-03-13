@@ -1,7 +1,8 @@
 # 👤 Guest Auth — 訪客認證 API
 
 > **Prefix：** `/api/guest`
-> 訪客帳號獨立於正式會員（`users` 表），使用 `guests` 表儲存，JWT Guard 為 `guest`。
+> **Guard：** `guest`（`guests` 表）
+> 訪客帳號獨立於正式會員（`users` 表），使用 `guests` 表儲存。
 > 有 🔒 標記的端點需要 `Authorization: Bearer {guest_token}`
 
 ---
@@ -49,17 +50,19 @@
     "success": true,
     "message": "註冊成功",
     "data": {
-        "guest": {
+        "user": {
             "id": 1,
             "name": "張三",
             "email": "guest@example.com",
             "phone": "0912345678",
-            "created_at": "2026-03-12 11:00:00"
+            "created_at": "2026-03-13 11:00:00"
         },
         "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
     }
 }
 ```
+
+> **注意：** 回應中的 key 為 `data.user`（非 `data.guest`），與會員認證格式一致。
 
 **錯誤回應**
 
@@ -93,14 +96,16 @@
 {
     "success": true,
     "message": "登入成功",
-    "guest": {
-        "id": 1,
-        "name": "張三",
-        "email": "guest@example.com"
-    },
-    "token": "eyJ0eXAiOiJKV1Qi...",
-    "token_type": "bearer",
-    "expires_in": 3600
+    "data": {
+        "user": {
+            "id": 1,
+            "name": "張三",
+            "email": "guest@example.com"
+        },
+        "token": "eyJ0eXAiOiJKV1Qi...",
+        "token_type": "bearer",
+        "expires_in": 3600
+    }
 }
 ```
 
@@ -121,7 +126,7 @@
 {
     "success": true,
     "data": {
-        "guest": {
+        "user": {
             "id": 1,
             "name": "張三",
             "email": "guest@example.com",
@@ -140,8 +145,7 @@
 ```json
 {
     "success": true,
-    "message": "登出成功",
-    "data": null
+    "message": "登出成功"
 }
 ```
 
@@ -153,11 +157,13 @@
 
 ```json
 {
-  "success": true,
-  "message": "登入成功",
-  "guest": { ... },
-  "token": "eyJ0eXAiOiJKV1Qi...",
-  "token_type": "bearer",
-  "expires_in": 3600
+    "success": true,
+    "message": "登入成功",
+    "data": {
+        "user": { ... },
+        "token": "eyJ0eXAiOiJKV1Qi...",
+        "token_type": "bearer",
+        "expires_in": 3600
+    }
 }
 ```

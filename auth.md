@@ -1,6 +1,7 @@
 # 🔐 Auth — 會員認證 API
 
 > **Prefix：** `/api/auth`
+> **Guard：** `api`（`users` 表）
 > **認證方式：** 有 🔒 標記的端點需要 `Authorization: Bearer {token}` Header
 
 ---
@@ -30,6 +31,8 @@
 | `password`              | `string` | ✅   | 密碼（min:6）      |
 | `password_confirmation` | `string` | ✅   | 確認密碼           |
 | `phone`                 | `string` | ❌   | 手機號碼（max:20） |
+| `tax_id`                | `string` | ❌   | 統一編號（max:20） |
+| `address`               | `string` | ❌   | 地址（max:255）    |
 
 **請求範例**
 
@@ -56,7 +59,7 @@
             "email": "user@example.com",
             "phone": "0912345678",
             "status": "active",
-            "created_at": "2026-03-12 11:00:00"
+            "created_at": "2026-03-13 11:00:00"
         },
         "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
     }
@@ -103,31 +106,39 @@
 }
 ```
 
-> **JOB 登入說明：** 系統會向 `https://findjob.lemaxim.tw/v1/user/login` 驗證，若驗證成功且使用者不存在本地資料庫，將自動建立帳號。
+> **JOB 登入說明：**
+> - 系統向 JOB API 驗證帳號密碼
+> - 若本地不存在該 email 的使用者，自動建立帳號
+> - 若本地已存在該 email 的使用者，同步更新姓名、手機等資料
+> - 帳號狀態為非 `active` 時將被拒絕登入（403）
 
 **回應範例（200）**
 
 ```json
 {
     "success": true,
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-    "token_type": "bearer",
-    "expires_in": 3600,
-    "user": {
-        "id": 1,
-        "name": "王小明",
-        "email": "user@example.com"
+    "message": "登入成功",
+    "data": {
+        "user": {
+            "id": 1,
+            "name": "王小明",
+            "email": "user@example.com"
+        },
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        "token_type": "bearer",
+        "expires_in": 3600
     }
 }
 ```
 
 **錯誤回應**
 
-| 狀態碼 | 說明                            |
-| ------ | ------------------------------- |
+| 狀態碼 | 說明                             |
+| ------ | -------------------------------- |
 | `401`  | 帳號或密碼錯誤 / 第三方驗證失敗 |
+| `403`  | 帳號已被停用                     |
 | `422`  | 驗證失敗（欄位格式錯誤）        |
-| `500`  | 第三方驗證服務異常              |
+| `500`  | 第三方驗證服務異常               |
 
 ---
 
@@ -145,7 +156,7 @@
             "email": "user@example.com",
             "phone": "0912345678",
             "status": "active",
-            "last_login_at": "2026-03-12 10:30:00"
+            "last_login_at": "2026-03-13 10:30:00"
         }
     }
 }
@@ -160,8 +171,7 @@
 ```json
 {
     "success": true,
-    "message": "登出成功",
-    "data": null
+    "message": "登出成功"
 }
 ```
 
@@ -175,11 +185,14 @@
 
 ```json
 {
-  "success": true,
-  "access_token": "eyJ0eXAiOiJKV1Qi...",
-  "token_type": "bearer",
-  "expires_in": 3600,
-  "user": { ... }
+    "success": true,
+    "message": "登入成功",
+    "data": {
+        "user": { ... },
+        "token": "eyJ0eXAiOiJKV1Qi...",
+        "token_type": "bearer",
+        "expires_in": 3600
+    }
 }
 ```
 
@@ -189,10 +202,12 @@
 
 **Request Body（JSON）**
 
-| 欄位    | 類型     | 必填 | 說明               |
-| ------- | -------- | ---- | ------------------ |
-| `name`  | `string` | ❌   | 姓名（max:255）    |
-| `phone` | `string` | ❌   | 手機號碼（max:20） |
+| 欄位      | 類型     | 必填 | 說明               |
+| --------- | -------- | ---- | ------------------ |
+| `name`    | `string` | ❌   | 姓名（max:255）    |
+| `phone`   | `string` | ❌   | 手機號碼（max:20） |
+| `tax_id`  | `string` | ❌   | 統一編號（max:20） |
+| `address` | `string` | ❌   | 地址（max:255）    |
 
 **請求範例**
 
@@ -218,6 +233,13 @@
     }
 }
 ```
+
+**錯誤回應**
+
+| 狀態碼 | 說明     |
+| ------ | -------- |
+| `422`  | 驗證失敗 |
+| `500`  | 更新失敗 |
 
 ---
 
@@ -246,8 +268,7 @@
 ```json
 {
     "success": true,
-    "message": "密碼修改成功",
-    "data": null
+    "message": "密碼修改成功"
 }
 ```
 
@@ -257,3 +278,4 @@
 | ------ | ---------- |
 | `400`  | 舊密碼錯誤 |
 | `422`  | 驗證失敗   |
+| `500`  | 修改失敗   |

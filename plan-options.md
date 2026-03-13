@@ -1,19 +1,27 @@
 # ⚙️ Plan Options — 方案選項管理 API
 
 > 方案選項（`PlanOption`）屬於某個廣告方案（`AdPlan`）的子項目，可設定不同時效、價格的選購方案。
-> 查詢端點為**公開 API**，寫入操作需要 🔒 驗證。
+> **讀取端點為公開 API**，不需要驗證。
+> **建立、更新、刪除為管理員專屬**，需要 `auth:admin` Guard 🔒。
 
 ---
 
 ## 端點索引
 
-| 方法     | 路徑                             | 說明                 | 需要驗證 |
-| -------- | -------------------------------- | -------------------- | -------- |
-| `GET`    | `/api/ad-plans/{planId}/options` | 取得方案下的所有選項 | ❌       |
-| `POST`   | `/api/ad-plans/{planId}/options` | 為方案新增選項       | ✅       |
-| `GET`    | `/api/plan-options/{id}`         | 取得單一選項詳情     | ❌       |
-| `PUT`    | `/api/plan-options/{id}`         | 更新方案選項         | ✅       |
-| `DELETE` | `/api/plan-options/{id}`         | 刪除方案選項         | ✅       |
+### 公開端點（無需驗證）
+
+| 方法  | 路徑                             | 說明                 |
+| ----- | -------------------------------- | -------------------- |
+| `GET` | `/api/ad-plans/{planId}/options` | 取得方案下的所有選項 |
+| `GET` | `/api/plan-options/{id}`         | 取得單一選項詳情     |
+
+### 管理員端點（auth:admin 🔒）
+
+| 方法     | 路徑                                        | 說明           |
+| -------- | ------------------------------------------- | -------------- |
+| `POST`   | `/api/admin/ad-plans/{planId}/options`       | 為方案新增選項 |
+| `PUT`    | `/api/admin/ad-plans/options/{id}`           | 更新方案選項   |
+| `DELETE` | `/api/admin/ad-plans/options/{id}`           | 刪除方案選項   |
 
 ---
 
@@ -56,7 +64,7 @@
 
 ---
 
-## POST `/api/ad-plans/{planId}/options` — 新增方案選項 🔒
+## POST `/api/admin/ad-plans/{planId}/options` — 新增方案選項 🔒 Admin
 
 **Path Parameters**
 
@@ -105,7 +113,7 @@
         "valid_start_date": "2026-01-01",
         "valid_end_date": "2026-12-31",
         "sort_order": 2,
-        "created_at": "2026-03-12 11:00:00"
+        "created_at": "2026-03-13 11:00:00"
     }
 }
 ```
@@ -155,7 +163,7 @@
 
 ---
 
-## PUT `/api/plan-options/{id}` — 更新方案選項 🔒
+## PUT `/api/admin/ad-plans/options/{id}` — 更新方案選項 🔒 Admin
 
 **Path Parameters**
 
@@ -194,7 +202,7 @@
         "id": 1,
         "price": "5299.00",
         "sort_order": 3,
-        "updated_at": "2026-03-12 12:00:00"
+        "updated_at": "2026-03-13 12:00:00"
     }
 }
 ```
@@ -209,7 +217,7 @@
 
 ---
 
-## DELETE `/api/plan-options/{id}` — 刪除方案選項 🔒
+## DELETE `/api/admin/ad-plans/options/{id}` — 刪除方案選項 🔒 Admin
 
 **Path Parameters**
 
@@ -222,8 +230,7 @@
 ```json
 {
     "success": true,
-    "message": "方案選項刪除成功",
-    "data": null
+    "message": "方案選項刪除成功"
 }
 ```
 

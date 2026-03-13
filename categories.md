@@ -1,36 +1,51 @@
 # 📁 Categories — 廣告分類管理 API
 
-> **Prefix：** `/api/categories`
-> **認證：** 所有端點均需要 `Authorization: Bearer {member_token}` 🔒
+> **分類功能分為兩組路由：**
+> - **會員端** (`auth:api`)：僅可讀取分類列表與詳情
+> - **管理員端** (`auth:admin`)：完整 CRUD（含軟刪除與還原）
+>
+> `include_deleted` 參數僅管理員可使用。
 
 ---
 
 ## 端點索引
 
-| 方法     | 路徑                           | 說明               |
-| -------- | ------------------------------ | ------------------ |
-| `GET`    | `/api/categories`              | 分類列表           |
-| `POST`   | `/api/categories`              | 建立分類           |
-| `GET`    | `/api/categories/{id}`         | 分類詳情           |
-| `PUT`    | `/api/categories/{id}`         | 更新分類           |
-| `DELETE` | `/api/categories/{id}`         | 刪除分類（軟刪除） |
-| `POST`   | `/api/categories/{id}/restore` | 還原已刪除的分類   |
+### 會員端（auth:api）
+
+| 方法  | 路徑                     | 說明     | Guard |
+| ----- | ------------------------ | -------- | ----- |
+| `GET` | `/api/categories`        | 分類列表 | api   |
+| `GET` | `/api/categories/{id}`   | 分類詳情 | api   |
+
+### 管理員端（auth:admin）
+
+| 方法     | 路徑                                  | 說明             | Guard |
+| -------- | ------------------------------------- | ---------------- | ----- |
+| `GET`    | `/api/admin/categories`               | 分類列表         | admin |
+| `POST`   | `/api/admin/categories`               | 建立分類         | admin |
+| `GET`    | `/api/admin/categories/{id}`          | 分類詳情         | admin |
+| `PUT`    | `/api/admin/categories/{id}`          | 更新分類         | admin |
+| `DELETE` | `/api/admin/categories/{id}`          | 刪除分類（軟刪除）| admin |
+| `POST`   | `/api/admin/categories/{id}/restore`  | 還原已刪除的分類 | admin |
 
 ---
 
 ## GET `/api/categories` — 分類列表
 
+> 會員端與管理員端共用同一個 Controller method，但行為略有不同。
+
 **Query Parameters**
 
-| 參數              | 類型      | 說明                               |
-| ----------------- | --------- | ---------------------------------- |
-| `status`          | `string`  | 篩選狀態：`active` / `inactive`    |
-| `include_deleted` | `boolean` | 是否包含軟刪除的分類，預設 `false` |
+| 參數              | 類型      | 說明                                                 |
+| ----------------- | --------- | ---------------------------------------------------- |
+| `status`          | `string`  | 篩選狀態：`active` / `inactive`                      |
+| `include_deleted` | `boolean` | 是否包含軟刪除的分類（⚠️ 僅管理員 guard 有效）       |
 
 **請求範例**
 
 ```
-GET /api/categories?status=active&include_deleted=false
+GET /api/categories?status=active
+GET /api/admin/categories?include_deleted=true
 ```
 
 **回應範例（200）**
@@ -56,14 +71,14 @@ GET /api/categories?status=active&include_deleted=false
 
 ---
 
-## POST `/api/categories` — 建立分類
+## POST `/api/admin/categories` — 建立分類 🔒 Admin
 
 **Request Body（JSON）**
 
 | 欄位          | 類型      | 必填 | 說明                                  |
 | ------------- | --------- | ---- | ------------------------------------- |
 | `name`        | `string`  | ✅   | 分類名稱（max:255，唯一值）           |
-| `slug`        | `string`  | ❌   | URL slug（auto 從 name 產生，唯一值） |
+| `slug`        | `string`  | ❌   | URL slug（自動從 name 產生，唯一值）  |
 | `description` | `string`  | ❌   | 分類說明                              |
 | `sort_order`  | `integer` | ❌   | 排序（預設 0）                        |
 | `status`      | `string`  | ❌   | `active`（預設）/ `inactive`          |
@@ -88,12 +103,12 @@ GET /api/categories?status=active&include_deleted=false
     "data": {
         "id": 5,
         "name": "新型態廣告",
-        "slug": "new-type-ad",
+        "slug": "xin-xing-tai-guang-gao",
         "description": "創新廣告形式",
         "sort_order": 5,
         "status": "active",
-        "created_at": "2026-03-12 11:00:00",
-        "updated_at": "2026-03-12 11:00:00"
+        "created_at": "2026-03-13 11:00:00",
+        "updated_at": "2026-03-13 11:00:00"
     }
 }
 ```
@@ -138,7 +153,9 @@ GET /api/categories/1?with_plans=true
         "slug": "meeting-management",
         "description": "適合企業會議室管理",
         "status": "active",
-        "ad_plans": [{ "id": 1, "name": "基礎方案", "price": "999.00" }]
+        "ad_plans": [
+            { "id": 1, "name": "基礎方案", "price": "999.00" }
+        ]
     }
 }
 ```
@@ -151,7 +168,7 @@ GET /api/categories/1?with_plans=true
 
 ---
 
-## PUT `/api/categories/{id}` — 更新分類
+## PUT `/api/admin/categories/{id}` — 更新分類 🔒 Admin
 
 **Path Parameters**
 
@@ -188,7 +205,7 @@ GET /api/categories/1?with_plans=true
         "id": 1,
         "name": "會議管理升級版",
         "status": "inactive",
-        "updated_at": "2026-03-12 12:00:00"
+        "updated_at": "2026-03-13 12:00:00"
     }
 }
 ```
@@ -202,7 +219,7 @@ GET /api/categories/1?with_plans=true
 
 ---
 
-## DELETE `/api/categories/{id}` — 刪除分類（軟刪除）
+## DELETE `/api/admin/categories/{id}` — 刪除分類 🔒 Admin
 
 **Path Parameters**
 
@@ -217,8 +234,7 @@ GET /api/categories/1?with_plans=true
 ```json
 {
     "success": true,
-    "message": "分類刪除成功",
-    "data": null
+    "message": "分類刪除成功"
 }
 ```
 
@@ -230,7 +246,7 @@ GET /api/categories/1?with_plans=true
 
 ---
 
-## POST `/api/categories/{id}/restore` — 還原已刪除的分類
+## POST `/api/admin/categories/{id}/restore` — 還原已刪除的分類 🔒 Admin
 
 **Path Parameters**
 
@@ -247,7 +263,17 @@ GET /api/categories/1?with_plans=true
     "data": {
         "id": 1,
         "name": "會務管理",
-        "deleted_at": null,
+        "deleted_at": null
+    }
+}
+```
+
+**錯誤回應**
+
+| 狀態碼 | 說明               |
+| ------ | ------------------ |
+| `400`  | 分類未被刪除       |
+| `404`  | 分類不存在         |
         "updated_at": "2026-03-12 13:00:00"
     }
 }

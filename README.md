@@ -7,12 +7,11 @@
 
 ## 驗證方式
 
-API 使用 **JWT Bearer Token** 進行身份驗證，系統提供三組 Guard：
+API 使用 **JWT Bearer Token** 進行身份驗證，系統提供兩組 Guard：
 
 | Guard   | 對象     | 說明                        |
 | ------- | -------- | --------------------------- |
 | `api`   | 會員     | 註冊會員，使用 `users` 表   |
-| `guest` | 訪客     | 臨時帳號，使用 `guests` 表  |
 | `admin` | 管理員   | 後台管理員，使用 `admins` 表 |
 
 請求時需在 Header 帶入：
@@ -46,13 +45,14 @@ Authorization: Bearer {your_access_token}
 | 分類            | 說明                                       | 文件                                 |
 | --------------- | ------------------------------------------ | ------------------------------------ |
 | 🔐 Auth         | 會員認證（註冊、登入、登出、JOB 第三方）   | [auth.md](./auth.md)                 |
-| 👤 Guest Auth   | 訪客認證（無需正式會員）                   | [guest-auth.md](./guest-auth.md)     |
-| 🛡️ Admin Auth   | 管理員認證（後台登入、密碼管理）           | [admin-auth.md](./admin-auth.md)     |
+| ️ Admin Auth   | 管理員認證（後台登入、密碼管理）           | [admin-auth.md](./admin-auth.md)     |
 | 📁 Categories   | 廣告分類管理（會員瀏覽 + 管理員 CRUD）    | [categories.md](./categories.md)     |
 | 📋 Ad Plans     | 廣告方案（公開瀏覽 + 管理員 CRUD）        | [ad-plans.md](./ad-plans.md)         |
 | ⚙️ Plan Options | 方案選項管理（公開瀏覽 + 管理員 CRUD）    | [plan-options.md](./plan-options.md) |
 | 🛒 Orders       | 訂單管理（建立、付款、退款、含廣告下單）   | [orders.md](./orders.md)             |
 | 📢 Ads          | 廣告管理（會員建立/送審 + 管理員審核上架） | [ads.md](./ads.md)                   |
+| 🔒 Category Perms | 分類購買權限管理（管理員 CRUD）          | [category-permissions.md](./category-permissions.md) |
+| 🔑 Admin Perms  | 管理員 API 權限管理（模組式 CRUD 控制）    | [admin-permissions.md](./admin-permissions.md) |
 
 ## HTTP 狀態碼
 
@@ -73,13 +73,13 @@ Authorization: Bearer {your_access_token}
 公開路由
   POST   /api/auth/register
   POST   /api/auth/login
-  POST   /api/guest/register
-  POST   /api/guest/login
   POST   /api/admin/login
   GET    /api/ad-plans
   GET    /api/ad-plans/{id}
   GET    /api/ad-plans/{planId}/options
   GET    /api/plan-options/{id}
+  GET    /api/public/ads
+  GET    /api/public/ads/{id}
 
 會員路由（auth:api）
   /api/auth/...          會員帳號管理
@@ -87,12 +87,12 @@ Authorization: Bearer {your_access_token}
   /api/orders/...        訂單管理
   /api/ads/...           廣告管理（使用者端）
 
-訪客路由（auth:guest）
-  /api/guest/...         訪客帳號管理
-
 管理員路由（auth:admin）
   /api/admin/...         管理員帳號管理
   /api/admin/ads/...     廣告審核管理
   /api/admin/categories/...  分類 CRUD
   /api/admin/ad-plans/...    廣告方案 CRUD
+  /api/admin/users/*/category-permissions/...  分類權限管理
+  /api/admin/admins/*/permissions/...  管理員權限管理
+  /api/admin/permissions/modules       可用模組列表
 ```

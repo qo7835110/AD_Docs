@@ -17,17 +17,27 @@
 ## [POST] `/api/admin/ads/{id}/approve`
 核准該廣告。審核通過！
 - **權限要求:** `admin.permission:ads,update`
-- **邏輯連動:** 若廣告綁定的訂單已付清，系統通常會在核准當下自動生效並轉為 `active` 等待聯播網排程。
+- **邏輯連動:** 若廣告綁定的訂單已付清，系統通常會在核准當下自動生效並轉為 `active` 等待聯播網排程。無須 Payload。
 
 ## [POST] `/api/admin/ads/{id}/reject`
 退回有問題的廣告，將狀態撥為 `rejected` 讓客戶重新修改重送。
-- **權限要求:** `admin.permission:ads,update`
-- **Payload Validation:** `reason` (string, required) - 必填退件原因供客戶前台檢視。
+
+### Payload 說明
+| Schema | 型別 | 驗證規則 | 必填 | 說明 |
+|---|---|---|---|---|
+| `reason` | string | required | 是 | 必填退件原因，供客戶前台檢視 |
+
+### Payload 範例 (JSON)
+```json
+{
+  "reason": "廣告主視覺圖片包含違規文字，請修改後重新送審。"
+}
+```
 
 ## [POST] `/api/admin/ads/{id}/activate`
-直接以系統管理員身份強制讓廣告於前台播送。
+直接以系統管理員身份強制讓廣告於前台播送。無 Payload。
 - **權限要求:** `admin.permission:ads,update`
 
 ## [POST] `/api/admin/ads/{id}/deactivate`
-強制將異常的廣告（如有違規情事）立即下架停止前台播送，狀態轉為 `inactive`。
+強制將異常的廣告（如有違規情事）立即下架停止前台播送，狀態轉為 `inactive`。無 Payload。
 - **權限要求:** `admin.permission:ads,update`

@@ -19,6 +19,19 @@
 
 ## [PUT] `/api/admin/change-password`
 修改當前管理員本身的密碼以防安全外洩。
-- **Payload Validation:**
-  - `current_password` (required, 嚴格對比目前密碼)
-  - `new_password` (required, 須具備強度 min:8, 且含大小寫等規則依專案而定, confirmed)
+
+### Payload 說明
+| Schema | 型別 | 驗證規則 | 必填 | 說明 |
+|---|---|---|---|---|
+| `current_password` | string | required | 是 | 嚴格對比目前密碼 |
+| `new_password` | string | min:8, confirmed | 是 | 管理員新密碼（需具備強度） |
+| `new_password_confirmation` | string | | 是 | 新密碼確認欄位 |
+
+### Payload 範例 (JSON)
+```json
+{
+  "current_password": "OldAdminPassword123",
+  "new_password": "NewSecureAdmin456!",
+  "new_password_confirmation": "NewSecureAdmin456!"
+}
+```

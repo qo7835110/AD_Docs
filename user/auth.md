@@ -16,12 +16,36 @@
 
 ## [PUT] `/api/auth/change-password`
 修改當前會員的密碼。
-- **Payload Validation:**
-  - `current_password` (string, required)
-  - `new_password` (string, required, min:8, confirmed)
+
+### Payload 說明
+| Schema | 型別 | 驗證規則 | 必填 | 說明 |
+|---|---|---|---|---|
+| `current_password` | string | required | 是 | 目前正在使用的密碼 |
+| `new_password` | string | min:8, confirmed | 是 | 欲變更的全新密碼 |
+| `new_password_confirmation` | string | | 是 | 新密碼確認欄位 |
+
+### Payload 範例 (JSON)
+```json
+{
+  "current_password": "OldPassword123!",
+  "new_password": "NewStrongPassword456!",
+  "new_password_confirmation": "NewStrongPassword456!"
+}
+```
 
 ## [PUT] `/api/auth/profile`
 更新會員可變更之個人資料。
-- **Payload Validation:**
-  - `name` (string, sometimes|required)
-  - `phone` (string, nullable) 等視 Schema 而定的非敏感欄位。
+
+### Payload 說明
+| Schema | 型別 | 驗證規則 | 必填 | 說明 |
+|---|---|---|---|---|
+| `name` | string | sometimes, max:255 | 否 | 使用者名稱/暱稱 |
+| `phone` | string | nullable, max:20 | 否 | 聯絡電話 |
+
+### Payload 範例 (JSON)
+```json
+{
+  "name": "王小明 (更新後)",
+  "phone": "0912345678"
+}
+```

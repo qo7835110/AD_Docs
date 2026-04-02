@@ -41,3 +41,36 @@
 ## [POST] `/api/admin/ads/{id}/deactivate`
 強制將異常的廣告（如有違規情事）立即下架停止前台播送，狀態轉為 `inactive`。無 Payload。
 - **權限要求:** `admin.permission:ads,update`
+
+## [GET] `/api/admin/ads/{id}/stats`
+取得指定廣告在特定日期區間內的點閱成效與相關統計數據（含曝光數、點擊數、點擊率 CTR 以及每日趨勢對照）。
+- **權限要求:** `admin.permission:ads,view`
+- **Query Params:**
+  - `from` (string, optional) - 查詢起始日期 (Y-m-d)。預設為 30 天前。
+  - `to` (string, optional) - 查詢結束日期 (Y-m-d)。預設為今天。
+- **限制與校驗:** 最大查詢區間不可超過 365 天，若日期格式錯誤會回傳 `422 Unprocessable Entity`。
+- **Response 結構 (JSON):**
+```json
+{
+  "success": true,
+  "message": "成功取得廣告統計",
+  "data": {
+    "ad_id": 1,
+    "period": {
+      "from": "2026-02-25",
+      "to": "2026-03-26"
+    },
+    "total_impressions": 1500,
+    "total_clicks": 45,
+    "ctr": 0.03,
+    "daily": [
+      {
+        "date": "2026-02-25",
+        "impressions": 50,
+        "clicks": 2,
+        "ctr": 0.04
+      }
+    ]
+  }
+}
+```

@@ -1,98 +1,129 @@
-# AD Platform API 文件
+# Ad Platform API 文件
 
-> **Base URL：** `http://localhost:8000/api`
-> **版本：** v1.0.0
-> **最後更新：** 2026-03-13
-> **日期時間格式：** `Y-m-d H:i:s`（所有 datetime 欄位）
+## 基本資訊
 
-## 驗證方式
+- **Base URL**: `/api`
+- **Response 格式**: JSON
+- **認證機制**: JWT Bearer Token
 
-API 使用 **JWT Bearer Token** 進行身份驗證，系統提供兩組 Guard：
+---
 
-| Guard   | 對象     | 說明                        |
-| ------- | -------- | --------------------------- |
-| `api`   | 會員     | 註冊會員，使用 `users` 表   |
-| `admin` | 管理員   | 後台管理員，使用 `admins` 表 |
+## 認證說明
 
-請求時需在 Header 帶入：
+本平台分為兩套獨立的認證系統：
 
-```http
-Authorization: Bearer {your_access_token}
-```
+| 系統 | Guard | Header |
+|------|-------|--------|
+| 會員 (User) | `auth:api` | `Authorization: Bearer {token}` |
+| 管理員 (Admin) | `auth:admin` | `Authorization: Bearer {token}` |
 
-## 回應格式
+Token 由登入 API 取得，回傳的 `token` 欄位即為 Bearer Token。Token 為 JWT，預設有效期請參照系統設定（預設 60 分鐘）。
 
-所有 API 回應均為 JSON，結構如下：
+---
+
+## 通用 Response 格式
+
+所有 API 均採用統一的回應結構：
 
 ```json
-// 成功
 {
   "success": true,
-  "message": "操作說明",
-  "data": { ... }
+  "message": "操作成功",
+  "data": {}
 }
+```
 
-// 失敗
+錯誤回應範例：
+
+```json
 {
   "success": false,
   "message": "錯誤說明",
-  "errors": { ... }
+  "data": null
 }
 ```
 
-## API 分類目錄
-
-| 分類            | 說明                                       | 文件                                 |
-| --------------- | ------------------------------------------ | ------------------------------------ |
-| 🔐 Auth         | 會員認證（註冊、登入、登出、JOB 第三方）   | [auth.md](./auth.md)                 |
-| ️ Admin Auth   | 管理員認證（後台登入、密碼管理）           | [admin-auth.md](./admin-auth.md)     |
-| 📁 Categories   | 廣告分類管理（會員瀏覽 + 管理員 CRUD）    | [categories.md](./categories.md)     |
-| 📋 Ad Plans     | 廣告方案（公開瀏覽 + 管理員 CRUD）        | [ad-plans.md](./ad-plans.md)         |
-| ⚙️ Plan Options | 方案選項管理（公開瀏覽 + 管理員 CRUD）    | [plan-options.md](./plan-options.md) |
-| 🛒 Orders       | 訂單管理（建立、付款、退款、含廣告下單）   | [orders.md](./orders.md)             |
-| 📢 Ads          | 廣告管理（會員建立/送審 + 管理員審核上架） | [ads.md](./ads.md)                   |
-| 🔒 Category Perms | 分類購買權限管理（管理員 CRUD）          | [category-permissions.md](./category-permissions.md) |
-| 🔑 Admin Perms  | 管理員 API 權限管理（模組式 CRUD 控制）    | [admin-permissions.md](./admin-permissions.md) |
+---
 
 ## HTTP 狀態碼
 
-| 狀態碼 | 說明                        |
-| ------ | --------------------------- |
-| `200`  | 成功                        |
-| `201`  | 建立成功                    |
-| `400`  | 請求錯誤（業務邏輯失敗）    |
-| `401`  | 未授權 / Token 無效或已過期 |
-| `403`  | 禁止存取（權限不足）        |
-| `404`  | 資源不存在                  |
-| `422`  | 驗證失敗（欄位格式錯誤）    |
-| `500`  | 伺服器內部錯誤              |
+| 狀態碼 | 說明 |
+|--------|------|
+| 200 | 成功 |
+| 201 | 建立成功 |
+| 302 | 重新導向（用於廣告點擊追蹤） |
+| 400 | 業務邏輯錯誤 |
+| 401 | 未授權（Token 無效或未提供） |
+| 403 | 禁止存取（權限不足） |
+| 404 | 資源不存在 |
+| 422 | 驗證失敗 |
+| 500 | 伺服器錯誤 |
 
-## 路由前綴總覽
+---
 
-```
-公開路由
-  POST   /api/auth/register
-  POST   /api/auth/login
-  POST   /api/admin/login
-  GET    /api/ad-plans
-  GET    /api/ad-plans/{id}
-  GET    /api/ad-plans/{planId}/options
-  GET    /api/plan-options/{id}
-  GET    /api/public/ads
-  GET    /api/public/ads/{id}
+## API 分類總覽
 
-會員路由（auth:api）
-  /api/auth/...          會員帳號管理
-  /api/categories/...    分類瀏覽
-  /api/orders/...        訂單管理
-  /api/ads/...           廣告管理（使用者端）
+### 公開 API（無需認證）
 
-管理員路由（auth:admin）
-  /api/admin/...         管理員帳號管理
-  /api/admin/ads/...     廣告審核管理
-  /api/admin/categories/...  分類 CRUD
-  /api/admin/ad-plans/...    廣告方案 CRUD
-  /api/admin/users/*/category-permissions/...  分類權限管理
-  /api/admin/admins/*/permissions/...  管理員權限管理
-  /api/admin/permissions/modules       可用模組列表
-```
+| 路徑 | 方法 | 說明 |
+|------|------|------|
+| `/api/auth/register` | POST | 會員註冊 |
+| `/api/auth/login` | POST | 會員登入 |
+| `/api/admin/login` | POST | 管理員登入 |
+| `/api/ad-plans` | GET | 瀏覽廣告方案列表 |
+| `/api/ad-plans/{id}` | GET | 取得廣告方案詳情 |
+| `/api/ad-plans/{planId}/options` | GET | 取得方案選項列表 |
+| `/api/plan-options/{id}` | GET | 取得方案選項詳情 |
+| `/api/public/ads` | GET | 瀏覽上架廣告（支援搜尋/分頁） |
+| `/api/public/ads/{id}` | GET | 取得廣告詳情 |
+| `/api/public/ads/{id}/impression` | POST | 記錄廣告曝光 |
+| `/api/public/ads/{id}/click` | GET | 記錄廣告點擊（302 導向） |
+
+### 會員 API（需 User JWT）
+
+| 路徑 | 方法 | 說明 |
+|------|------|------|
+| `/api/auth/me` | GET | 取得目前登入會員資料 |
+| `/api/auth/logout` | POST | 會員登出 |
+| `/api/auth/refresh` | POST | 刷新 Token |
+| `/api/auth/change-password` | PUT | 修改密碼 |
+| `/api/auth/profile` | PUT | 更新個人資料 |
+| `/api/categories` | GET | 取得分類列表 |
+| `/api/categories/{id}` | GET | 取得分類詳情 |
+| `/api/orders` | GET | 取得我的訂單列表 |
+| `/api/orders` | POST | 建立訂單 |
+| `/api/orders/with-ads` | POST | 建立訂單並同時建立廣告草稿 |
+| `/api/orders/{orderNumber}` | GET | 取得訂單詳情 |
+| `/api/orders/{orderNumber}/cancel` | POST | 取消訂單 |
+| `/api/orders/{orderNumber}/pay` | POST | 支付訂單 |
+| `/api/orders/{orderNumber}/refund` | POST | 申請退款 |
+| `/api/orders/{orderNumber}/payments` | GET | 取得訂單付款記錄 |
+| `/api/ads` | GET | 取得我的廣告列表 |
+| `/api/ads` | POST | 建立廣告草稿 |
+| `/api/ads/{id}` | GET | 取得廣告詳情 |
+| `/api/ads/{id}` | PUT | 更新廣告內容 |
+| `/api/ads/{id}` | DELETE | 刪除廣告 |
+| `/api/ads/{id}/image` | POST | 上傳廣告圖片 |
+| `/api/ads/{id}/submit` | POST | 提交廣告審核 |
+
+### 管理員 API（需 Admin JWT）
+
+請參閱 [admin/](./admin/) 目錄下的各功能分類文件。
+
+---
+
+## 文件目錄
+
+- [public/auth.md](./public/auth.md) - 公開認證 API
+- [public/ad-plans.md](./public/ad-plans.md) - 公開廣告方案 API
+- [public/ads.md](./public/ads.md) - 公開廣告瀏覽與追蹤 API
+- [user/auth.md](./user/auth.md) - 會員認證 API
+- [user/categories.md](./user/categories.md) - 分類查詢 API
+- [user/orders.md](./user/orders.md) - 訂單管理 API
+- [user/ads.md](./user/ads.md) - 廣告管理 API
+- [admin/auth.md](./admin/auth.md) - 管理員認證 API
+- [admin/ads.md](./admin/ads.md) - 管理員廣告審核 API
+- [admin/ad-plans.md](./admin/ad-plans.md) - 管理員廣告方案管理 API
+- [admin/categories.md](./admin/categories.md) - 管理員分類管理 API
+- [admin/orders.md](./admin/orders.md) - 管理員訂單管理 API
+- [admin/permissions.md](./admin/permissions.md) - 管理員權限管理 API

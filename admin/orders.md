@@ -1,24 +1,100 @@
-# Admin API - 訂單管理
-**身份驗證:** `auth:admin`   
-**所需模組權限:** `orders`
+# 管理員訂單管理 API
 
-> 管理員訂單管理模組，提供訂單審視、開立發票、手動確認付款及金額統計功能。
+> 以下 API 需在 Header 帶入管理員 JWT Token：
+> `Authorization: Bearer {token}`
 
-## [GET] `/api/admin/orders`
-取得全平台訂單列表（分頁），支援多種條件篩選。
-- **權限要求:** `admin.permission:orders,view`
+---
 
-### Query Params
+## 所需權限
+
+| API | 所需權限 |
+|-----|----------|
+| 取得列表 / 詳情 / 統計 | `orders:view` |
+| 開立發票 / 確認付款 | `orders:update` |
+
+---
+
+## 訂單狀態說明
+
+| 狀態值 | 說明 |
+|--------|------|
+| `pending` | 待處理（剛建立） |
+| `processing` | 處理中 |
+| `active` | 已啟用 |
+| `completed` | 已完成 |
+| `cancelled` | 已取消 |
+| `expired` | 已到期 |
+
+## 付款狀態說明
+
+| 狀態值 | 說明 |
+|--------|------|
+| `unpaid` | 未付款 |
+| `paid` | 已付款 |
+| `partial_refund` | 部分退款 |
+| `refunded` | 已全額退款 |
+| `failed` | 付款失敗 |
+
+---
+
+## 取得訂單統計資料
+
+**GET** `/api/admin/orders/statistics`
+
+> **注意**：此路由必須在 `/api/admin/orders/{id}` 之前存取，路由定義中 `statistics` 優先匹配。
+
+### Query Parameters
+
 | 參數 | 型別 | 必填 | 說明 |
-|---|---|---|---|
-| `order_status` | string | 否 | 篩選訂單狀態：`pending`, `processing`, `active`, `completed`, `cancelled`, `expired` |
-| `payment_status` | string | 否 | 篩選付款狀態：`unpaid`, `paid`, `partial_refund`, `refunded`, `failed` |
-| `order_number` | string | 否 | 訂單編號模糊搜尋 |
-| `date_from` | string (Y-m-d) | 否 | 建立日期起始 |
-| `date_to` | string (Y-m-d) | 否 | 建立日期結束 |
-| `per_page` | integer | 否 | 每頁筆數，預設 15 |
+|------|------|------|------|
+| `date_from` | string | 否 | 統計起始日期，格式：`Y-m-d` |
+| `date_to` | string | 否 | 統計結束日期，格式：`Y-m-d` |
 
-### Response 範例
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "成功取得訂單統計資料",
+  "data": {
+    "total_orders": 100,
+    "total_revenue": 50000.00,
+    "total_tax": 2500.00,
+    "total_discount": 1000.00,
+    "by_order_status": {
+      "pending": 10,
+      "active": 60,
+      "completed": 25,
+      "cancelled": 5
+    },
+    "by_payment_status": {
+      "unpaid": 10,
+      "paid": 85,
+      "refunded": 5
+    }
+  }
+}
+```
+
+---
+
+## 取得所有訂單列表
+
+**GET** `/api/admin/orders`
+
+### Query Parameters
+
+| 參數 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `order_status` | string | 否 | 篩選訂單狀態 |
+| `payment_status` | string | 否 | 篩選付款狀態 |
+| `order_number` | string | 否 | 依訂單編號搜尋（模糊比對） |
+| `date_from` | string | 否 | 建立日期起始，格式：`Y-m-d` |
+| `date_to` | string | 否 | 建立日期結束，格式：`Y-m-d` |
+| `per_page` | integer | 否 | 每頁筆數，預設 `15` |
+
+### Response 200 - 成功
+
 ```json
 {
   "success": true,
@@ -27,241 +103,183 @@
     "data": [
       {
         "id": 1,
-        "order_number": "ORD20260326ABCD1234",
+        "order_number": "ORD20251216ABCD1234",
         "order_status": "pending",
         "payment_status": "unpaid",
-        "amounts": {
-          "subtotal": 1000.00,
-          "discount": 0.00,
-          "tax": 50.00,
-          "total": 1050.00
-        },
-        "payment": {
-          "method": null,
-          "transaction_id": null,
-          "invoice_number": null,
-          "paid_at": null
-        },
+        "total": 2833,
         "orderable": {
-          "type": "User",
-          "id": 1,
-          "name": "使用者名稱",
+          "id": 5,
+          "name": "王小明",
           "email": "user@example.com"
         },
-        "created_at": "2026-03-26 10:00:00"
+        "created_at": "2025-12-16T10:00:00+08:00"
       }
     ],
-    "meta": { "current_page": 1, "last_page": 5, "per_page": 15, "total": 72 }
+    "meta": {
+      "current_page": 1,
+      "last_page": 7,
+      "per_page": 15,
+      "total": 100
+    }
   }
 }
 ```
 
 ---
 
-## [GET] `/api/admin/orders/{id}`
-取得單一訂單完整詳情，包含訂單明細（items）、付款記錄（payment_logs）及訂購者資訊。
-- **權限要求:** `admin.permission:orders,view`
+## 取得訂單詳情
 
-### Path Params
-| 參數 | 型別 | 必填 | 說明 |
-|---|---|---|---|
-| `id` | integer | 是 | 訂單 ID |
+**GET** `/api/admin/orders/{id}`
 
-### Response 範例
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `id` | integer | 訂單 ID（非訂單編號） |
+
+### Response 200 - 成功
+
 ```json
 {
   "success": true,
   "message": "成功取得訂單詳情",
   "data": {
     "id": 1,
-    "order_number": "ORD20260326ABCD1234",
-    "order_status": "active",
-    "payment_status": "paid",
-    "amounts": {
-      "subtotal": 1000.00,
-      "discount": 0.00,
-      "tax": 50.00,
-      "total": 1050.00
-    },
-    "payment": {
-      "method": "bank_transfer",
-      "transaction_id": "TXN202603261234",
-      "invoice_number": "AA-12345678",
-      "paid_at": "2026-03-26 12:00:00"
-    },
-    "validity": {
-      "starts_at": "2026-03-26 12:00:00",
-      "expires_at": "2026-04-25 12:00:00",
-      "is_expired": false,
-      "is_active": true
-    },
+    "order_number": "ORD20251216ABCD1234",
+    "order_status": "pending",
+    "payment_status": "unpaid",
+    "subtotal": 2699,
+    "tax": 134,
+    "discount": 0,
+    "total": 2833,
+    "invoice_number": null,
+    "notes": null,
     "orderable": {
-      "type": "User",
-      "id": 1,
-      "name": "使用者名稱",
+      "id": 5,
+      "name": "王小明",
       "email": "user@example.com"
     },
     "items": [
       {
         "id": 1,
         "plan_option_id": 1,
-        "item_name": "基本方案",
+        "plan_option": {
+          "name": "3個月方案",
+          "duration_days": 90,
+          "price": 2699
+        },
         "quantity": 1,
-        "unit_price": 1000.00,
-        "subtotal": 1000.00,
-        "validity": { "duration_days": 30 }
+        "unit_price": 2699,
+        "subtotal": 2699,
+        "starts_at": null,
+        "ends_at": null
       }
     ],
-    "payment_logs": [
-      {
-        "id": 1,
-        "status": "success",
-        "amount": 1050.00,
-        "payment_method": "bank_transfer",
-        "transaction_id": "TXN202603261234",
-        "processed_at": "2026-03-26 12:00:00"
-      }
-    ],
-    "notes": null,
-    "created_at": "2026-03-26 10:00:00",
-    "updated_at": "2026-03-26 12:00:00"
+    "payment_logs": [],
+    "created_at": "2025-12-16T10:00:00+08:00"
   }
 }
 ```
 
 ---
 
-## [POST] `/api/admin/orders/{id}/invoice`
-為已付款訂單開立發票，寫入發票號碼。
-- **權限要求:** `admin.permission:orders,update`
-- **業務規則:** 訂單必須為已付款（`payment_status = paid`）且尚未開立過發票。
+## 開立發票
 
-### Payload 說明
-| 欄位 | 型別 | 驗證規則 | 必填 | 說明 |
-|---|---|---|---|---|
-| `invoice_number` | string | required, max:50, unique | 是 | 發票號碼（不可重複） |
+**POST** `/api/admin/orders/{id}/invoice`
 
-### Payload 範例
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `id` | integer | 訂單 ID |
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `invoice_number` | string | 是 | 發票號碼（格式：`AA-12345678`） |
+
 ```json
 {
   "invoice_number": "AA-12345678"
 }
 ```
 
-### Response 範例（成功）
+### Response 200 - 成功
+
 ```json
 {
   "success": true,
   "message": "發票開立成功",
   "data": {
     "id": 1,
-    "order_number": "ORD20260326ABCD1234",
-    "payment": {
-      "method": "bank_transfer",
-      "transaction_id": "TXN202603261234",
-      "invoice_number": "AA-12345678",
-      "paid_at": "2026-03-26 12:00:00"
-    }
+    "order_number": "ORD20251216ABCD1234",
+    "invoice_number": "AA-12345678"
   }
 }
 ```
 
-### 錯誤情境
-| HTTP Code | 情境 |
-|---|---|
-| 400 | 訂單尚未付款 / 已開立過發票 |
-| 404 | 訂單不存在 |
-| 422 | 驗證失敗（缺少 invoice_number 或號碼重複） |
+### Response 400 - 業務邏輯錯誤
+
+```json
+{
+  "success": false,
+  "message": "此訂單尚未付款，無法開立發票",
+  "data": null
+}
+```
 
 ---
 
-## [POST] `/api/admin/orders/{id}/confirm-payment`
-管理員手動確認訂單付款（例如銀行匯款確認），系統會自動建立付款記錄並啟用訂單。
-- **權限要求:** `admin.permission:orders,update`
-- **業務規則:** 訂單不可為已付款或已取消狀態。
-- **連動行為:** 確認後訂單狀態自動轉為 `active`，付款狀態轉為 `paid`，同時設定 `starts_at` 與 `expires_at`。
+## 確認付款
 
-### Payload 說明
-| 欄位 | 型別 | 驗證規則 | 必填 | 說明 |
-|---|---|---|---|---|
-| `payment_method` | string | required, max:50 | 是 | 付款方式（如 `bank_transfer`, `cash`） |
-| `payment_transaction_id` | string | max:255 | 否 | 交易編號 |
-| `notes` | string | max:1000 | 否 | 備註說明 |
+**POST** `/api/admin/orders/{id}/confirm-payment`
 
-### Payload 範例
+手動確認訂單付款（適用於線下付款如銀行匯款的核對）。
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `id` | integer | 訂單 ID |
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `payment_method` | string | 是 | 付款方式，如 `bank_transfer` |
+| `payment_transaction_id` | string | 否 | 交易編號 |
+| `notes` | string | 否 | 備註說明 |
+
 ```json
 {
   "payment_method": "bank_transfer",
   "payment_transaction_id": "TXN202603261234",
-  "notes": "已確認銀行匯款入帳"
+  "notes": "已確認銀行匯款"
 }
 ```
 
-### Response 範例（成功）
+### Response 200 - 成功
+
 ```json
 {
   "success": true,
   "message": "付款確認成功",
   "data": {
     "id": 1,
-    "order_number": "ORD20260326ABCD1234",
-    "order_status": "active",
+    "order_number": "ORD20251216ABCD1234",
     "payment_status": "paid",
-    "payment": {
-      "method": "bank_transfer",
-      "transaction_id": "TXN202603261234",
-      "invoice_number": null,
-      "paid_at": "2026-03-26 14:00:00"
-    },
-    "validity": {
-      "starts_at": "2026-03-26 14:00:00",
-      "expires_at": "2026-04-25 14:00:00"
-    }
+    "order_status": "processing"
   }
 }
 ```
 
-### 錯誤情境
-| HTTP Code | 情境 |
-|---|---|
-| 400 | 訂單已付款 / 訂單已取消 |
-| 404 | 訂單不存在 |
-| 422 | 驗證失敗（缺少 payment_method） |
+### Response 400 - 業務邏輯錯誤
 
----
-
-## [GET] `/api/admin/orders/statistics`
-取得訂單金額統計報表，包含總訂單數、總營收、稅額、折扣，以及按訂單狀態和付款狀態分組的彙總。
-- **權限要求:** `admin.permission:orders,view`
-
-### Query Params
-| 參數 | 型別 | 必填 | 說明 |
-|---|---|---|---|
-| `date_from` | string (Y-m-d) | 否 | 統計起始日期 |
-| `date_to` | string (Y-m-d) | 否 | 統計結束日期 |
-
-### Response 範例
 ```json
 {
-  "success": true,
-  "message": "成功取得訂單統計資料",
-  "data": {
-    "total_orders": 150,
-    "total_revenue": 125000.00,
-    "total_tax": 6250.00,
-    "total_discount": 3000.00,
-    "by_order_status": {
-      "pending": { "order_status": "pending", "count": 20, "total_amount": 18000.00 },
-      "active": { "order_status": "active", "count": 80, "total_amount": 72000.00 },
-      "completed": { "order_status": "completed", "count": 35, "total_amount": 28000.00 },
-      "cancelled": { "order_status": "cancelled", "count": 10, "total_amount": 5000.00 },
-      "expired": { "order_status": "expired", "count": 5, "total_amount": 2000.00 }
-    },
-    "by_payment_status": {
-      "unpaid": { "payment_status": "unpaid", "count": 20, "total_amount": 18000.00 },
-      "paid": { "payment_status": "paid", "count": 120, "total_amount": 100000.00 },
-      "refunded": { "payment_status": "refunded", "count": 10, "total_amount": 7000.00 }
-    }
-  }
+  "success": false,
+  "message": "訂單已付款，無法重複確認",
+  "data": null
 }
 ```

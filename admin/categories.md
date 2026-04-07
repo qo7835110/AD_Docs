@@ -1,54 +1,237 @@
-# Admin API - 廣告分類管理 (Categories)
-**身份驗證:** `auth:admin`   
-**所需模組權限:** `categories`
+# 管理員分類管理 API
 
-> 用來建立與維護最高層級的維度—「廣告分類 (Category)」。後續所有方案與邏輯都依附於 Categories 下。
+> 以下 API 需在 Header 帶入管理員 JWT Token：
+> `Authorization: Bearer {token}`
 
-## [GET] `/api/admin/categories`
-管理員檢視所有分類列隊。
-- **權限要求:** `admin.permission:categories,view`
-- **Response:** 會包含 `trashed=true` 的參數支援，得以看見被 Soft Delete (軟刪除) 的分類歷史。
+---
 
-## [POST] `/api/admin/categories`
-建立全新的分類類目。
+## 所需權限
 
-### Payload 說明
-| Schema | 型別 | 驗證規則 | 必填 | 說明 |
-|---|---|---|---|---|
-| `name` | string | required, unique:categories | 是 | 全新分類名稱 |
-| `description` | string | nullable | 否 | 分類詳細簡介說明 |
+| API | 所需權限 |
+|-----|----------|
+| 取得列表 / 詳情 | `categories:view` |
+| 建立分類 | `categories:create` |
+| 更新分類 | `categories:update` |
+| 刪除分類 | `categories:delete` |
+| 還原分類 | `categories:update` |
 
-### Payload 範例 (JSON)
+---
+
+## 取得分類列表
+
+**GET** `/api/admin/categories`
+
+### Query Parameters
+
+| 參數 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `status` | string | 否 | 篩選狀態，可選值：`active`、`inactive` |
+| `include_deleted` | boolean | 否 | 傳入 `true` 時，同時回傳已軟刪除的分類 |
+
+### Response 200 - 成功
+
 ```json
 {
-  "name": "首頁黃金橫幅特區",
-  "description": "只能用於網站首頁頂部的橫幅專區，具備最高曝光率。"
+  "success": true,
+  "message": "成功取得分類列表",
+  "data": [
+    {
+      "id": 1,
+      "name": "企業徵才",
+      "slug": "recruitment",
+      "description": "企業徵才廣告分類",
+      "sort_order": 1,
+      "status": "active",
+      "deleted_at": null
+    }
+  ]
 }
 ```
 
-## [GET] `/api/admin/categories/{id}`
-取得分類詳細內容。
-- **權限要求:** `admin.permission:categories,view`
+---
 
-## [PUT] `/api/admin/categories/{id}`
-更新分類名稱與描述內容。
+## 取得分類詳情
 
-### Payload 說明
-與建立欄位相同，唯 `name` 驗證會排除當下的 ID (`unique:categories,name,{id}`) 以防重複阻擋。
+**GET** `/api/admin/categories/{id}`
 
-### Payload 範例 (JSON)
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `id` | integer | 分類 ID |
+
+### Query Parameters
+
+| 參數 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `with_plans` | boolean | 否 | 傳入 `true` 時，同時回傳該分類下的廣告方案 |
+
+### Response 200 - 成功
+
 ```json
 {
-  "name": "首頁黃金橫幅特區(最新)",
-  "description": "更新後的規則說明與涵蓋範圍"
+  "success": true,
+  "message": "成功取得分類詳情",
+  "data": {
+    "id": 1,
+    "name": "企業徵才",
+    "slug": "recruitment",
+    "description": "企業徵才廣告分類",
+    "sort_order": 1,
+    "status": "active"
+  }
 }
 ```
 
-## [DELETE] `/api/admin/categories/{id}`
-軟刪除該分類。無 Payload。
-- **權限要求:** `admin.permission:categories,delete`
-> **邏輯警告:** 分類被刪除後，旗下依賴的 `CategoryPermission` 或 `AdPlans` 有可能進入失效或無法查詢的狀態，前端應提供警示對話框。
+---
 
-## [POST] `/api/admin/categories/{id}/restore`
-將誤刪或暫停的分類恢復為活耀狀態。無 Payload。
-- **權限要求:** `admin.permission:categories,update`
+## 建立分類
+
+**POST** `/api/admin/categories`
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `name` | string | 是 | 分類名稱，需唯一 |
+| `slug` | string | 否 | URL 識別碼，不傳則自動由 `name` 產生，需唯一 |
+| `description` | string | 否 | 分類說明 |
+| `sort_order` | integer | 否 | 排序序號，預設 `0` |
+| `status` | string | 否 | 狀態，可選值：`active`、`inactive`，預設 `active` |
+
+```json
+{
+  "name": "房產租售",
+  "slug": "real-estate",
+  "description": "房產租售廣告分類",
+  "sort_order": 5,
+  "status": "active"
+}
+```
+
+### Response 201 - 成功
+
+```json
+{
+  "success": true,
+  "message": "分類建立成功",
+  "data": {
+    "id": 5,
+    "name": "房產租售",
+    "slug": "real-estate",
+    "description": "房產租售廣告分類",
+    "sort_order": 5,
+    "status": "active"
+  }
+}
+```
+
+---
+
+## 更新分類
+
+**PUT** `/api/admin/categories/{id}`
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `id` | integer | 分類 ID |
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `name` | string | 否 | 分類名稱 |
+| `slug` | string | 否 | URL 識別碼 |
+| `description` | string | 否 | 分類說明 |
+| `sort_order` | integer | 否 | 排序序號 |
+| `status` | string | 否 | 狀態：`active`、`inactive` |
+
+```json
+{
+  "name": "房產租售（更新）",
+  "status": "inactive"
+}
+```
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "分類更新成功",
+  "data": {
+    "id": 5,
+    "name": "房產租售（更新）",
+    "status": "inactive"
+  }
+}
+```
+
+---
+
+## 刪除分類
+
+**DELETE** `/api/admin/categories/{id}`
+
+軟刪除分類（可還原）。
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `id` | integer | 分類 ID |
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "分類刪除成功",
+  "data": null
+}
+```
+
+---
+
+## 還原已刪除的分類
+
+**POST** `/api/admin/categories/{id}/restore`
+
+還原被軟刪除的分類。
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `id` | integer | 分類 ID（包含已刪除的） |
+
+### Request Body
+
+不需傳入任何 Body。
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "分類還原成功",
+  "data": {
+    "id": 5,
+    "name": "房產租售",
+    "status": "active",
+    "deleted_at": null
+  }
+}
+```
+
+### Response 400 - 分類未被刪除
+
+```json
+{
+  "success": false,
+  "message": "分類未被刪除，無需還原",
+  "data": null
+}
+```

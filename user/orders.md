@@ -1,83 +1,433 @@
-# User API - 訂單與付款
-**權限:** `auth:api` (需攜帶 Bearer Token)
+# 訂單管理 API (會員)
 
-## [GET] `/api/orders`
-取得該會員名下的所有歷史訂單清單（含付款狀態）。
+> 以下 API 需在 Header 帶入會員 JWT Token：
+> `Authorization: Bearer {token}`
 
 ---
 
-## [POST] `/api/orders`
-替已建立之「預備用實體草稿」與特定的「計費選項」綁定為正式訂單。
+## 訂單狀態說明
 
-### Payload 說明
-| Schema | 型別 | 驗證規則 | 必填 | 說明 |
-|---|---|---|---|---|
-| `plan_option_id` | integer | exists:plan_options,id | 是 | 廣告方案內的確切計價子項 ID |
-| `ad_id` | integer | exists:ads,id | 是 | 此訂單要綁定生效的草稿廣告 ID |
+| 狀態值 | 說明 |
+|--------|------|
+| `pending` | 待處理（剛建立） |
+| `processing` | 處理中 |
+| `active` | 已啟用（廣告上架中） |
+| `completed` | 已完成 |
+| `cancelled` | 已取消 |
+| `expired` | 已到期 |
 
-### Payload 範例 (JSON)
+## 付款狀態說明
+
+| 狀態值 | 說明 |
+|--------|------|
+| `unpaid` | 未付款 |
+| `paid` | 已付款 |
+| `partial_refund` | 部分退款 |
+| `refunded` | 已全額退款 |
+| `failed` | 付款失敗 |
+
+---
+
+## 取得我的訂單列表
+
+**GET** `/api/orders`
+
+### Query Parameters
+
+| 參數 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `order_status` | string | 否 | 篩選訂單狀態 |
+| `payment_status` | string | 否 | 篩選付款狀態 |
+| `date_from` | string | 否 | 建立日期起始，格式：`Y-m-d` |
+| `date_to` | string | 否 | 建立日期結束，格式：`Y-m-d` |
+
+### Response 200 - 成功
+
 ```json
 {
-  "plan_option_id": 12,
-  "ad_id": 88
+  "success": true,
+  "message": "成功取得訂單列表",
+  "data": {
+    "orders": [
+      {
+        "id": 1,
+        "order_number": "ORD20251216ABCD1234",
+        "order_status": "pending",
+        "payment_status": "unpaid",
+        "subtotal": 2699,
+        "tax": 134,
+        "discount": 0,
+        "total": 2833,
+        "notes": null,
+        "created_at": "2025-12-16T10:00:00+08:00"
+      }
+    ]
+  }
 }
 ```
 
 ---
 
-## [POST] `/api/orders/with-ads`
-便捷 API：於結帳流程同步建立全新「廣告草稿」並直接產生「訂單」。
+## 建立訂單
 
-### Payload 說明
-| Schema | 型別 | 驗證規則 | 必填 | 說明 |
-|---|---|---|---|---|
-| `plan_option_id` | integer | required | 是 | 計價子項 ID |
-| `category_id` | integer | required | 是 | 指定該廣告欲投稿的分類（系統憑此攔截權限） |
-| `ad_title` | string | required | 是 | 快速建立之廣告標題 |
-| `ad_content` | string | required | 是 | 廣告詳細內文 |
+**POST** `/api/orders`
 
-### Payload 範例 (JSON)
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `items` | array | 是 | 訂單項目陣列，至少包含一筆 |
+| `items[].plan_option_id` | integer | 是 | 方案選項 ID |
+| `items[].quantity` | integer | 是 | 數量（最小 1） |
+| `notes` | string | 否 | 訂單備註 |
+
 ```json
 {
-  "category_id": 3,
-  "plan_option_id": 12,
-  "ad_title": "快速曝光旗艦體驗專案",
-  "ad_content": "首頁橫幅連續刊登三天！"
+  "items": [
+    {
+      "plan_option_id": 1,
+      "quantity": 1
+    },
+    {
+      "plan_option_id": 3,
+      "quantity": 2
+    }
+  ],
+  "notes": "請盡快處理"
+}
+```
+
+### Response 201 - 成功
+
+```json
+{
+  "success": true,
+  "message": "訂單建立成功",
+  "data": {
+    "order": {
+      "id": 1,
+      "order_number": "ORD20251216ABCD1234",
+      "order_status": "pending",
+      "payment_status": "unpaid",
+      "subtotal": 2699,
+      "tax": 134,
+      "discount": 0,
+      "total": 2833,
+      "notes": "請盡快處理",
+      "items": [
+        {
+          "id": 1,
+          "plan_option_id": 1,
+          "quantity": 1,
+          "unit_price": 2699,
+          "subtotal": 2699
+        }
+      ],
+      "payment_logs": [],
+      "created_at": "2025-12-16T10:00:00+08:00"
+    }
+  }
 }
 ```
 
 ---
 
-## [GET] `/api/orders/{orderNumber}`
-透過訂單獨立編號 (`order_number`) 取得訂單詳細資料與金流明細。
+## 建立訂單並同時建立廣告草稿
 
----
+**POST** `/api/orders/with-ads`
 
-## [POST] `/api/orders/{orderNumber}/cancel`
-取消未付款的訂單。無 Payload 需求。
+在建立訂單的同時，為每個訂單項目預先建立對應的廣告草稿，省去後續單獨建立廣告的步驟。
 
----
+### Request Body
 
-## [POST] `/api/orders/{orderNumber}/pay`
-執行付款（觸發金流串接或內部虛擬付款放行）。
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `items` | array | 是 | 訂單項目陣列 |
+| `items[].plan_option_id` | integer | 是 | 方案選項 ID |
+| `items[].quantity` | integer | 是 | 數量 |
+| `items[].ads` | array | 否 | 該訂單項目對應的廣告資料陣列 |
+| `items[].ads[].title` | string | 是（若有 ads） | 廣告標題 |
+| `items[].ads[].description` | string | 否 | 廣告說明 |
+| `items[].ads[].link_url` | string | 否 | 廣告點擊連結 URL |
+| `notes` | string | 否 | 訂單備註 |
 
-### Payload 說明
-| Schema | 型別 | 驗證規則 | 必填 | 說明 |
-|---|---|---|---|---|
-| `payment_method` | string | in:credit_card,transfer,balance | 是 | 選擇要呼叫的付款管道 |
-
-### Payload 範例 (JSON)
 ```json
 {
-  "payment_method": "credit_card"
+  "items": [
+    {
+      "plan_option_id": 1,
+      "quantity": 1,
+      "ads": [
+        {
+          "title": "春季促銷廣告",
+          "description": "限時優惠，全館 5 折",
+          "link_url": "https://example.com/promo"
+        }
+      ]
+    }
+  ],
+  "notes": "備註資訊"
 }
 ```
-> **業務邏輯：** 付款成功狀態改變後，關聯之草稿可被系統非同步佇列接管，推進上架。
+
+### Response 201 - 成功
+
+```json
+{
+  "success": true,
+  "message": "訂單與廣告建立成功",
+  "data": {
+    "order": {
+      "id": 1,
+      "order_number": "ORD20251216ABCD1234",
+      "order_status": "pending",
+      "payment_status": "unpaid",
+      "total": 2833,
+      "items": [ ... ],
+      "payment_logs": []
+    },
+    "ads": [
+      {
+        "id": 1,
+        "title": "春季促銷廣告",
+        "status": "draft",
+        "order_item_id": 1
+      }
+    ]
+  }
+}
+```
 
 ---
 
-## [POST] `/api/orders/{orderNumber}/refund`
-申請退款作業，觸發營運端紀錄。
+## 取得訂單詳情
 
-## [GET] `/api/orders/{orderNumber}/payments`
-取得單一訂單的所有付款歷史（不論成功或失敗）。
+**GET** `/api/orders/{orderNumber}`
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `orderNumber` | string | 訂單編號，格式：`ORD{日期}{亂數}` |
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "成功取得訂單詳情",
+  "data": {
+    "order": {
+      "id": 1,
+      "order_number": "ORD20251216ABCD1234",
+      "order_status": "pending",
+      "payment_status": "unpaid",
+      "subtotal": 2699,
+      "tax": 134,
+      "discount": 0,
+      "total": 2833,
+      "invoice_number": null,
+      "notes": null,
+      "items": [
+        {
+          "id": 1,
+          "plan_option_id": 1,
+          "plan_option": {
+            "name": "3個月方案",
+            "duration_days": 90,
+            "price": 2699
+          },
+          "quantity": 1,
+          "unit_price": 2699,
+          "subtotal": 2699,
+          "starts_at": null,
+          "ends_at": null
+        }
+      ],
+      "payment_logs": [],
+      "created_at": "2025-12-16T10:00:00+08:00"
+    }
+  }
+}
+```
+
+---
+
+## 取消訂單
+
+**POST** `/api/orders/{orderNumber}/cancel`
+
+僅限未付款（`payment_status: unpaid`）且處於可取消狀態的訂單。
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `orderNumber` | string | 訂單編號 |
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `reason` | string | 否 | 取消原因 |
+
+```json
+{
+  "reason": "不需要了"
+}
+```
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "訂單取消成功",
+  "data": {
+    "order": {
+      "id": 1,
+      "order_number": "ORD20251216ABCD1234",
+      "order_status": "cancelled",
+      "payment_status": "unpaid"
+    }
+  }
+}
+```
+
+### Response 400 - 無法取消
+
+```json
+{
+  "success": false,
+  "message": "訂單已付款，無法取消",
+  "data": null
+}
+```
+
+---
+
+## 支付訂單
+
+**POST** `/api/orders/{orderNumber}/pay`
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `orderNumber` | string | 訂單編號 |
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `payment_method` | string | 是 | 付款方式，如：`credit_card`、`bank_transfer` |
+| `payment_data` | object | 否 | 付款相關的額外資料（依付款方式而定） |
+
+```json
+{
+  "payment_method": "credit_card",
+  "payment_data": {
+    "card_last4": "1234"
+  }
+}
+```
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "付款成功",
+  "data": {
+    "payment_log": {
+      "id": 1,
+      "order_id": 1,
+      "payment_method": "credit_card",
+      "amount": 2833,
+      "status": "success",
+      "transaction_id": null,
+      "created_at": "2025-12-16T10:30:00+08:00"
+    }
+  }
+}
+```
+
+---
+
+## 申請退款
+
+**POST** `/api/orders/{orderNumber}/refund`
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `orderNumber` | string | 訂單編號 |
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `amount` | number | 否 | 退款金額，不傳則全額退款 |
+| `reason` | string | 否 | 退款原因 |
+
+```json
+{
+  "amount": 500.00,
+  "reason": "不符合需求"
+}
+```
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "退款成功",
+  "data": {
+    "payment_log": {
+      "id": 2,
+      "order_id": 1,
+      "payment_method": "refund",
+      "amount": -500.00,
+      "status": "success",
+      "created_at": "2025-12-17T09:00:00+08:00"
+    }
+  }
+}
+```
+
+---
+
+## 取得訂單付款記錄
+
+**GET** `/api/orders/{orderNumber}/payments`
+
+### Path Parameters
+
+| 參數 | 型別 | 說明 |
+|------|------|------|
+| `orderNumber` | string | 訂單編號 |
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "成功取得付款記錄",
+  "data": {
+    "payment_logs": [
+      {
+        "id": 1,
+        "order_id": 1,
+        "payment_method": "credit_card",
+        "amount": 2833,
+        "status": "success",
+        "transaction_id": null,
+        "notes": null,
+        "created_at": "2025-12-16T10:30:00+08:00"
+      }
+    ]
+  }
+}
+```

@@ -1,37 +1,117 @@
-# Admin API - 管理員認證
-**權限:** `auth:admin` (需攜帶 Bearer Token)
+# 管理員認證 API
 
-> 管理員身份具有獨立 Guard 與 JWT Table，切勿與一般 `auth:api` (User) 混用。
+> 以下標記為「需認證」的 API 需在 Header 帶入管理員 JWT Token：
+> `Authorization: Bearer {token}`
+>
+> Token 由管理員登入 API 取得（見 `/api/admin/login`，該端點屬公開 API 詳見 [public/auth.md](../public/auth.md)）。
 
-## [POST] `/api/admin/logout`
-登出管理員帳號，並強制註銷伺服器上的 JWT Token。
-- **Response:** HTTP 204 無內文回傳。
+---
 
-## [POST] `/api/admin/refresh`
-換發新的效期管理員 Token。
-- **Logistics:** 若正在長時間審核或作業，將過期前自動觸發 Refresh。
+## 管理員登出
 
-## [GET] `/api/admin/me`
-取得當前登入管理員的詳細資料。
-- **Response:**
-  - `id`, `name`, `email` 等基礎資料。
-  - 重要：`permissions` 陣列（揭露了該管理員能看見與操作哪些內部模組，包含 `ads`, `categories` 等操作權限）。
+**POST** `/api/admin/logout`
 
-## [PUT] `/api/admin/change-password`
-修改當前管理員本身的密碼以防安全外洩。
+需認證。使當前管理員 Token 失效。
 
-### Payload 說明
-| Schema | 型別 | 驗證規則 | 必填 | 說明 |
-|---|---|---|---|---|
-| `current_password` | string | required | 是 | 嚴格對比目前密碼 |
-| `new_password` | string | min:8, confirmed | 是 | 管理員新密碼（需具備強度） |
-| `new_password_confirmation` | string | | 是 | 新密碼確認欄位 |
+### Response 200 - 成功
 
-### Payload 範例 (JSON)
 ```json
 {
-  "current_password": "OldAdminPassword123",
-  "new_password": "NewSecureAdmin456!",
-  "new_password_confirmation": "NewSecureAdmin456!"
+  "success": true,
+  "message": "登出成功",
+  "data": null
+}
+```
+
+---
+
+## 取得目前登入管理員資料
+
+**GET** `/api/admin/me`
+
+需認證。
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "admin": {
+      "id": 1,
+      "name": "系統管理員",
+      "email": "admin@example.com",
+      "status": "active",
+      "last_login_at": "2026-04-08T01:00:00+08:00"
+    }
+  }
+}
+```
+
+---
+
+## 刷新管理員 Token
+
+**POST** `/api/admin/refresh`
+
+需認證。使用舊 Token 換取新 Token，舊 Token 立即失效。
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "登入成功",
+  "data": {
+    "admin": { ... },
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "token_type": "bearer",
+    "expires_in": 3600
+  }
+}
+```
+
+---
+
+## 管理員修改密碼
+
+**PUT** `/api/admin/change-password`
+
+需認證。
+
+### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `old_password` | string | 是 | 目前密碼 |
+| `new_password` | string | 是 | 新密碼（最少 8 碼） |
+| `new_password_confirmation` | string | 是 | 確認新密碼（需與 `new_password` 相同） |
+
+```json
+{
+  "old_password": "current_password",
+  "new_password": "new_secure_password",
+  "new_password_confirmation": "new_secure_password"
+}
+```
+
+### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "密碼修改成功",
+  "data": null
+}
+```
+
+### Response 400 - 舊密碼錯誤
+
+```json
+{
+  "success": false,
+  "message": "舊密碼錯誤",
+  "data": null
 }
 ```

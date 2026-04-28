@@ -122,6 +122,7 @@ Token 由登入 API 取得，回傳的 `token` 欄位即為 Bearer Token。Token
 - [user/orders.md](./user/orders.md) - 訂單管理 API
 - [user/ads.md](./user/ads.md) - 廣告管理 API
 - [admin/auth.md](./admin/auth.md) - 管理員認證 API
+- [admin/admins.md](./admin/admins.md) - 管理員帳號管理 API
 - [admin/ads.md](./admin/ads.md) - 管理員廣告審核 API
 - [admin/ad-plans.md](./admin/ad-plans.md) - 管理員廣告方案管理 API
 - [admin/categories.md](./admin/categories.md) - 管理員分類管理 API

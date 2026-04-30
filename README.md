@@ -128,3 +128,4 @@ Token 由登入 API 取得，回傳的 `token` 欄位即為 Bearer Token。Token
 - [admin/categories.md](./admin/categories.md) - 管理員分類管理 API
 - [admin/orders.md](./admin/orders.md) - 管理員訂單管理 API
 - [admin/permissions.md](./admin/permissions.md) - 管理員權限管理 API
+- [admin/users.md](./admin/users.md) - 管理員使用者帳號管理 API

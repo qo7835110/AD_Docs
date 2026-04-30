@@ -33,6 +33,7 @@
 | `category_permissions` | 使用者分類購買權限 |
 | `admin_permissions` | 管理員權限管理（超級管理員） |
 | `admins` | 管理員帳號管理 |
+| `users` | 使用者帳號管理 |
 
 | 動作名稱 | 說明 |
 |----------|------|
@@ -54,7 +55,7 @@
   "success": true,
   "message": "取得成功",
   "data": {
-    "modules": ["ads", "categories", "ad_plans", "plan_options", "orders", "category_permissions", "admin_permissions", "admins"],
+    "modules": ["ads", "categories", "ad_plans", "plan_options", "orders", "category_permissions", "admin_permissions", "admins", "users"],
     "actions": ["view", "create", "update", "delete"]
   }
 }

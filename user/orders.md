@@ -28,6 +28,132 @@
 
 ---
 
+## 訂單草稿
+
+每位使用者僅能持有**一份**草稿，儲存於 Cache，**7 天**後自動過期。草稿用於前端暫存尚未確認的訂單內容；正式下單請呼叫 [建立訂單](#建立訂單) 或 [建立訂單並同時建立廣告草稿](#建立訂單並同時建立廣告草稿)。
+
+### 儲存訂單草稿（新增或覆蓋）
+
+**POST** `/api/orders/drafts`
+
+呼叫此端點會直接覆蓋舊草稿（upsert），不會累加。
+
+#### Request Body
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `items` | array | 是 | 訂單項目陣列，至少一筆 |
+| `items[].plan_option_id` | integer | 是 | 方案選項 ID |
+| `items[].quantity` | integer | 否 | 數量，預設 1 |
+| `items[].ads` | array | 否 | 預填廣告草稿資料 |
+| `items[].ads[].title` | string | 是（若有 ads） | 廣告標題 |
+| `items[].ads[].description` | string | 否 | 廣告說明 |
+| `items[].ads[].link_url` | string | 否 | 廣告連結 URL |
+| `discount` | number | 否 | 折扣金額，預設 0 |
+| `notes` | string | 否 | 備註 |
+
+```json
+{
+  "items": [
+    {
+      "plan_option_id": 1,
+      "quantity": 1,
+      "ads": [
+        {
+          "title": "春季促銷廣告",
+          "description": "限時優惠",
+          "link_url": "https://example.com/promo"
+        }
+      ]
+    }
+  ],
+  "discount": 0,
+  "notes": "稍後確認"
+}
+```
+
+#### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "草稿已儲存",
+  "data": {
+    "draft": {
+      "items": [
+        {
+          "plan_option_id": 1,
+          "quantity": 1,
+          "ads": [
+            {
+              "title": "春季促銷廣告",
+              "description": "限時優惠",
+              "link_url": "https://example.com/promo"
+            }
+          ]
+        }
+      ],
+      "discount": 0,
+      "notes": "稍後確認",
+      "expires_at": "2026-05-12T14:56:00+08:00",
+      "saved_at": "2026-05-05T14:56:00+08:00"
+    }
+  }
+}
+```
+
+---
+
+### 取得目前的訂單草稿
+
+**GET** `/api/orders/drafts`
+
+#### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "成功取得草稿",
+  "data": {
+    "draft": {
+      "items": [ ... ],
+      "discount": 0,
+      "notes": "稍後確認",
+      "expires_at": "2026-05-12T14:56:00+08:00",
+      "saved_at": "2026-05-05T14:56:00+08:00"
+    }
+  }
+}
+```
+
+#### Response 404 - 草稿不存在
+
+```json
+{
+  "success": false,
+  "message": "草稿不存在",
+  "data": null
+}
+```
+
+---
+
+### 刪除訂單草稿
+
+**DELETE** `/api/orders/drafts`
+
+#### Response 200 - 成功
+
+```json
+{
+  "success": true,
+  "message": "草稿已刪除",
+  "data": null
+}
+```
+
+---
+
 ## 取得我的訂單列表
 
 **GET** `/api/orders`

@@ -49,7 +49,6 @@
 | `items[].ads[].title` | string | 是（若有 ads） | 廣告標題 |
 | `items[].ads[].description` | string | 否 | 廣告說明 |
 | `items[].ads[].link_url` | string | 否 | 廣告連結 URL |
-| `discount` | number | 否 | 折扣金額，預設 0 |
 | `notes` | string | 否 | 備註 |
 
 ```json
@@ -67,7 +66,6 @@
       ]
     }
   ],
-  "discount": 0,
   "notes": "稍後確認"
 }
 ```
@@ -93,7 +91,6 @@
           ]
         }
       ],
-      "discount": 0,
       "notes": "稍後確認",
       "expires_at": "2026-05-12T14:56:00+08:00",
       "saved_at": "2026-05-05T14:56:00+08:00"
@@ -117,7 +114,6 @@
   "data": {
     "draft": {
       "items": [ ... ],
-      "discount": 0,
       "notes": "稍後確認",
       "expires_at": "2026-05-12T14:56:00+08:00",
       "saved_at": "2026-05-05T14:56:00+08:00"
@@ -174,20 +170,29 @@
   "success": true,
   "message": "成功取得訂單列表",
   "data": {
-    "orders": [
+    "data": [
       {
         "id": 1,
         "order_number": "ORD20251216ABCD1234",
         "order_status": "pending",
         "payment_status": "unpaid",
-        "subtotal": 2699,
-        "tax": 134,
-        "discount": 0,
-        "total": 2833,
+        "amounts": {
+          "subtotal": 2699.00,
+          "discount": 0.00,
+          "tax": 134.95,
+          "total": 2833.95
+        },
         "notes": null,
-        "created_at": "2025-12-16T10:00:00+08:00"
+        "created_at": "2025-12-16 10:00:00",
+        "updated_at": "2025-12-16 10:00:00"
       }
-    ]
+    ],
+    "summary": {
+      "total_count": 1,
+      "total_amount": 2833.95,
+      "paid_count": 0,
+      "unpaid_count": 1
+    }
   }
 }
 ```
@@ -235,22 +240,47 @@
       "order_number": "ORD20251216ABCD1234",
       "order_status": "pending",
       "payment_status": "unpaid",
-      "subtotal": 2699,
-      "tax": 134,
-      "discount": 0,
-      "total": 2833,
-      "notes": "請盡快處理",
+      "amounts": {
+        "subtotal": 2699.00,
+        "discount": 0.00,
+        "tax": 134.95,
+        "total": 2833.95
+      },
+      "payment": {
+        "method": null,
+        "transaction_id": null,
+        "invoice_number": null,
+        "paid_at": null
+      },
+      "validity": {
+        "starts_at": null,
+        "expires_at": null,
+        "is_expired": false,
+        "is_active": false
+      },
+      "orderable": {
+        "type": "User",
+        "id": 1,
+        "name": "Test User",
+        "email": "test@example.com"
+      },
       "items": [
         {
           "id": 1,
           "plan_option_id": 1,
           "quantity": 1,
-          "unit_price": 2699,
-          "subtotal": 2699
+          "unit_price": 2699.00,
+          "subtotal": 2699.00
         }
       ],
       "payment_logs": [],
-      "created_at": "2025-12-16T10:00:00+08:00"
+      "notes": "請盡快處理",
+      "request_info": {
+        "ip_address": "127.0.0.1",
+        "user_agent": null
+      },
+      "created_at": "2025-12-16 10:00:00",
+      "updated_at": "2025-12-16 10:00:00"
     }
   }
 }
@@ -308,9 +338,35 @@
       "order_number": "ORD20251216ABCD1234",
       "order_status": "pending",
       "payment_status": "unpaid",
-      "total": 2833,
+      "amounts": {
+        "subtotal": 2699.00,
+        "discount": 0.00,
+        "tax": 134.95,
+        "total": 2833.95
+      },
+      "payment": {
+        "method": null,
+        "transaction_id": null,
+        "invoice_number": null,
+        "paid_at": null
+      },
+      "validity": {
+        "starts_at": null,
+        "expires_at": null,
+        "is_expired": false,
+        "is_active": false
+      },
+      "orderable": {
+        "type": "User",
+        "id": 1,
+        "name": "Test User",
+        "email": "test@example.com"
+      },
       "items": [ ... ],
-      "payment_logs": []
+      "payment_logs": [],
+      "notes": "備註資訊",
+      "created_at": "2025-12-16 10:00:00",
+      "updated_at": "2025-12-16 10:00:00"
     },
     "ads": [
       {
@@ -348,30 +404,47 @@
       "order_number": "ORD20251216ABCD1234",
       "order_status": "pending",
       "payment_status": "unpaid",
-      "subtotal": 2699,
-      "tax": 134,
-      "discount": 0,
-      "total": 2833,
-      "invoice_number": null,
-      "notes": null,
+      "amounts": {
+        "subtotal": 2699.00,
+        "discount": 0.00,
+        "tax": 134.95,
+        "total": 2833.95
+      },
+      "payment": {
+        "method": null,
+        "transaction_id": null,
+        "invoice_number": null,
+        "paid_at": null
+      },
+      "validity": {
+        "starts_at": null,
+        "expires_at": null,
+        "is_expired": false,
+        "is_active": false
+      },
+      "orderable": {
+        "type": "User",
+        "id": 1,
+        "name": "Test User",
+        "email": "test@example.com"
+      },
       "items": [
         {
           "id": 1,
           "plan_option_id": 1,
-          "plan_option": {
-            "name": "3個月方案",
-            "duration_days": 90,
-            "price": 2699
-          },
           "quantity": 1,
-          "unit_price": 2699,
-          "subtotal": 2699,
-          "starts_at": null,
-          "ends_at": null
+          "unit_price": 2699.00,
+          "subtotal": 2699.00
         }
       ],
       "payment_logs": [],
-      "created_at": "2025-12-16T10:00:00+08:00"
+      "notes": null,
+      "request_info": {
+        "ip_address": "127.0.0.1",
+        "user_agent": null
+      },
+      "created_at": "2025-12-16 10:00:00",
+      "updated_at": "2025-12-16 10:00:00"
     }
   }
 }
@@ -425,8 +498,7 @@
 ```json
 {
   "success": false,
-  "message": "訂單已付款，無法取消",
-  "data": null
+  "message": "已付款訂單無法直接取消"
 }
 ```
 
@@ -467,14 +539,30 @@
   "data": {
     "payment_log": {
       "id": 1,
-      "order_id": 1,
+      "type": null,
       "payment_method": "credit_card",
       "amount": 2833,
       "status": "success",
       "transaction_id": null,
-      "created_at": "2025-12-16T10:30:00+08:00"
+      "gateway_response": {
+        "status": "success",
+        "message": "付款成功",
+        "amount": 2833
+      },
+      "notes": null,
+      "processed_at": "2025-12-16 10:30:00",
+      "created_at": "2025-12-16 10:30:00"
     }
   }
+}
+```
+
+### Response 400 - 無法付款（已取消）
+
+```json
+{
+  "success": false,
+  "message": "已取消訂單不可付款"
 }
 ```
 
@@ -483,6 +571,8 @@
 ## 申請退款
 
 **POST** `/api/orders/{orderNumber}/refund`
+
+目前僅支援**全額退款**，退款金額由系統依訂單金額決定，前端不可傳入 `amount`。
 
 ### Path Parameters
 
@@ -494,12 +584,10 @@
 
 | 欄位 | 型別 | 必填 | 說明 |
 |------|------|------|------|
-| `amount` | number | 否 | 退款金額，不傳則全額退款 |
 | `reason` | string | 否 | 退款原因 |
 
 ```json
 {
-  "amount": 500.00,
   "reason": "不符合需求"
 }
 ```
@@ -513,11 +601,15 @@
   "data": {
     "payment_log": {
       "id": 2,
-      "order_id": 1,
-      "payment_method": "refund",
-      "amount": -500.00,
-      "status": "success",
-      "created_at": "2025-12-17T09:00:00+08:00"
+      "type": null,
+      "payment_method": "credit_card",
+      "amount": -2833.00,
+      "status": "refunded",
+      "transaction_id": "REFUND_1760000000",
+      "gateway_response": null,
+      "notes": null,
+      "processed_at": "2025-12-17 09:00:00",
+      "created_at": "2025-12-17 09:00:00"
     }
   }
 }
@@ -545,13 +637,19 @@
     "payment_logs": [
       {
         "id": 1,
-        "order_id": 1,
+        "type": null,
         "payment_method": "credit_card",
         "amount": 2833,
         "status": "success",
         "transaction_id": null,
+        "gateway_response": {
+          "status": "success",
+          "message": "付款成功",
+          "amount": 2833
+        },
         "notes": null,
-        "created_at": "2025-12-16T10:30:00+08:00"
+        "processed_at": "2025-12-16 10:30:00",
+        "created_at": "2025-12-16 10:30:00"
       }
     ]
   }

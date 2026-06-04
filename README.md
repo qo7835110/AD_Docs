@@ -110,6 +110,28 @@ Token 由登入 API 取得，回傳的 `token` 欄位即為 Bearer Token。Token
 
 請參閱 [admin/](./admin/) 目錄下的各功能分類文件。
 
+### 外部應用 API（需 X-Api-Key + X-Api-Secret）
+
+| 路徑 | 方法 | 所需 scope | 說明 |
+|------|------|-----------|------|
+| `/api/external/ads` | GET | `ads.read` | 取得 owner user 的廣告列表 |
+| `/api/external/ads` | POST | `ads.create` | 建立廣告草稿 |
+| `/api/external/ads/{id}` | GET | `ads.read` | 取得廣告詳情 |
+| `/api/external/ads/{id}` | PUT | `ads.update` | 更新廣告 |
+| `/api/external/ads/{id}` | DELETE | `ads.delete` | 刪除廣告 |
+| `/api/external/ads/{id}/submit` | POST | `ads.create` | 提交廣告審核 |
+| `/api/external/orders` | GET | `orders.read` | 取得 owner user 的訂單列表 |
+| `/api/external/orders` | POST | `orders.create` | 建立訂單 |
+| `/api/external/orders/with-ads` | POST | `orders.create` | 建立訂單並同時建廣告草稿 |
+| `/api/external/orders/{orderNumber}` | GET | `orders.read` | 取得訂單詳情 |
+| `/api/external/orders/{orderNumber}/cancel` | POST | `orders.update` | 取消訂單 |
+| `/api/external/orders/{orderNumber}/pay` | POST | `orders.update` | 支付訂單 |
+| `/api/external/orders/{orderNumber}/refund` | POST | `orders.update` | 申請退款 |
+| `/api/external/orders/{orderNumber}/payments` | GET | `orders.read` | 取得付款記錄 |
+| `/api/external/orders/drafts` | GET | `orders.read` | 取得訂單草稿 |
+| `/api/external/orders/drafts` | POST | `orders.create` | 儲存訂單草稿 |
+| `/api/external/orders/drafts` | DELETE | `orders.create` | 刪除訂單草稿 |
+
 ---
 
 ## 文件目錄
@@ -129,3 +151,6 @@ Token 由登入 API 取得，回傳的 `token` 欄位即為 Bearer Token。Token
 - [admin/orders.md](./admin/orders.md) - 管理員訂單管理 API
 - [admin/permissions.md](./admin/permissions.md) - 管理員權限管理 API
 - [admin/users.md](./admin/users.md) - 管理員使用者帳號管理 API
+- [admin/external-apps.md](./admin/external-apps.md) - 外部應用管理 API
+- [external/ads.md](./external/ads.md) - 外部應用廣告 API
+- [external/orders.md](./external/orders.md) - 外部應用訂單 API

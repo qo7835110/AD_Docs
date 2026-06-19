@@ -8,7 +8,7 @@
 
 **GET** `/api/public/ads`
 
-僅回傳狀態為 `active`（上架中）的廣告，支援關鍵字搜尋、分類篩選與分頁。
+僅回傳狀態為 `active`（上架中）的廣告，支援關鍵字搜尋、分類篩選、語意向量搜尋與分頁。
 
 ### Query Parameters
 
@@ -20,6 +20,10 @@
 | `sort_dir` | string | 否 | 排序方向，可選值：`asc`、`desc`，預設 `desc` |
 | `per_page` | integer | 否 | 每頁筆數，範圍 1～100，預設 `15` |
 | `page` | integer | 否 | 頁碼，預設 `1` |
+| `visitor_text` | string | 否 | 訪客自由描述文字（最多 500 字元），傳入後系統以 Qdrant 語意向量搜尋取代傳統關鍵字篩選 |
+| `visitor_tags` | string \| array | 否 | 訪客所屬標籤 ID，可傳陣列或以逗號分隔的字串（例如 `"3,7,12"`）；系統依此比對廣告的 Target / Exclude 標籤設定 |
+
+> **語意搜尋說明**：提供 `visitor_text` 或 `visitor_tags` 時，後端啟動 Qdrant 混合搜尋模式，以向量相似度與標籤行為（`behavior_type: 1` 命中、`-1` 排除）排序廣告。若 Qdrant 不可用，系統自動降級為傳統關鍵字模糊搜尋。
 
 ### Response 200 - 成功
 
@@ -34,17 +38,35 @@
         "title": "春季促銷廣告",
         "description": "限時優惠，全館 5 折",
         "link_url": "https://example.com/promo",
+        "image_path": "ads/ad_1.jpg",
         "status": "active",
-        "category_id": 2,
-        "starts_at": "2025-03-01",
-        "ends_at": "2025-03-31",
+        "review": {
+          "rejection_reason": null,
+          "reviewed_by": 2,
+          "reviewer_name": "管理員 A",
+          "submitted_at": "2025-02-18 09:00:00",
+          "approved_at": "2025-02-19 11:30:00"
+        },
+        "schedule": {
+          "starts_at": "2025-03-01 00:00:00",
+          "expires_at": "2025-03-31 23:59:59"
+        },
+        "owner": {
+          "type": "User",
+          "id": 5,
+          "name": "王小明",
+          "email": "wang@example.com"
+        },
+        "order_item_id": 10,
+        "order_item": null,
         "files": [
           {
             "id": 10,
             "url": "https://example.com/storage/ads/ad_1.jpg"
           }
         ],
-        "created_at": "2025-02-20T10:00:00+08:00"
+        "created_at": "2025-02-20 10:00:00",
+        "updated_at": "2025-02-21 08:00:00"
       }
     ],
     "pagination": {
@@ -63,13 +85,13 @@
 
 **GET** `/api/public/ads/{id}`
 
+僅回傳狀態為 `active` 的廣告；如廣告不存在或已下架，回傳 404。
+
 ### Path Parameters
 
 | 參數 | 型別 | 說明 |
 |------|------|------|
 | `id` | integer | 廣告 ID |
-
-僅回傳狀態為 `active` 的廣告；如廣告不存在或已下架，回傳 404。
 
 ### Response 200 - 成功
 
@@ -82,12 +104,30 @@
     "title": "春季促銷廣告",
     "description": "限時優惠，全館 5 折",
     "link_url": "https://example.com/promo",
+    "image_path": "ads/ad_1.jpg",
     "status": "active",
-    "category_id": 2,
-    "starts_at": "2025-03-01",
-    "ends_at": "2025-03-31",
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": 2,
+      "reviewer_name": "管理員 A",
+      "submitted_at": "2025-02-18 09:00:00",
+      "approved_at": "2025-02-19 11:30:00"
+    },
+    "schedule": {
+      "starts_at": "2025-03-01 00:00:00",
+      "expires_at": "2025-03-31 23:59:59"
+    },
+    "owner": {
+      "type": "User",
+      "id": 5,
+      "name": "王小明",
+      "email": "wang@example.com"
+    },
+    "order_item_id": 10,
+    "order_item": null,
     "files": [],
-    "created_at": "2025-02-20T10:00:00+08:00"
+    "created_at": "2025-02-20 10:00:00",
+    "updated_at": "2025-02-21 08:00:00"
   }
 }
 ```
@@ -120,7 +160,7 @@
 
 不需傳任何 Body，系統自動記錄請求者的 IP 與 User-Agent。
 
-### Response 201 - 成功
+### Response 201 - 成功記錄
 
 ```json
 {
@@ -132,7 +172,9 @@
 }
 ```
 
-若為重複曝光（短時間內同 IP 再次觸發），`recorded` 回傳 `false`，`message` 為 `"重複曝光，已略過"`：
+### Response 201 - 重複曝光（已略過）
+
+同 IP 短時間內再次觸發，`recorded` 回傳 `false`：
 
 ```json
 {
@@ -141,6 +183,16 @@
   "data": {
     "recorded": false
   }
+}
+```
+
+### Response 404 - 廣告不存在或已下架
+
+```json
+{
+  "success": false,
+  "message": "廣告不存在或已下架",
+  "data": null
 }
 ```
 

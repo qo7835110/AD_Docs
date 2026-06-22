@@ -131,13 +131,17 @@ pending_review (待審核)
 | `title` | string | 是 | 廣告標題 |
 | `description` | string | 否 | 廣告說明 |
 | `link_url` | string | 否 | 廣告點擊連結 URL（需為合法 URL） |
+| `target_tags` | integer[] | 否 | 投放目標標籤 ID 陣列（`behavior_type=1`） |
+| `exclude_tags` | integer[] | 否 | 排除標籤 ID 陣列（`behavior_type=-1`） |
 
 ```json
 {
   "order_item_id": 1,
   "title": "春季促銷廣告",
   "description": "限時優惠，全館 5 折",
-  "link_url": "https://example.com/promo"
+  "link_url": "https://example.com/promo",
+  "target_tags": [1, 3],
+  "exclude_tags": [5]
 }
 ```
 
@@ -188,12 +192,16 @@ pending_review (待審核)
 | `title` | string | 否 | 廣告標題 |
 | `description` | string | 否 | 廣告說明 |
 | `link_url` | string | 否 | 廣告點擊連結 URL |
+| `target_tags` | integer[] | 否 | 投放目標標籤 ID 陣列（`behavior_type=1`）；傳入即全量覆寫 |
+| `exclude_tags` | integer[] | 否 | 排除標籤 ID 陣列（`behavior_type=-1`）；傳入即全量覆寫 |
 
 ```json
 {
   "title": "修改後的廣告標題",
   "description": "更新後的說明",
-  "link_url": "https://example.com/new-promo"
+  "link_url": "https://example.com/new-promo",
+  "target_tags": [1, 3],
+  "exclude_tags": [5]
 }
 ```
 

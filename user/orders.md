@@ -294,17 +294,21 @@
 
 在建立訂單的同時，為每個訂單項目預先建立對應的廣告草稿，省去後續單獨建立廣告的步驟。
 
+> **數量限制**：每個訂單項目的 `ads` 陣列長度不可超過該項目的 `quantity`。超出時回傳 422。
+
 ### Request Body
 
 | 欄位 | 型別 | 必填 | 說明 |
 |------|------|------|------|
 | `items` | array | 是 | 訂單項目陣列 |
 | `items[].plan_option_id` | integer | 是 | 方案選項 ID |
-| `items[].quantity` | integer | 是 | 數量 |
-| `items[].ads` | array | 否 | 該訂單項目對應的廣告資料陣列 |
+| `items[].quantity` | integer | 否 | 數量，預設 1 |
+| `items[].ads` | array | 否 | 該訂單項目對應的廣告資料陣列，長度不可超過 `quantity` |
 | `items[].ads[].title` | string | 是（若有 ads） | 廣告標題 |
 | `items[].ads[].description` | string | 否 | 廣告說明 |
 | `items[].ads[].link_url` | string | 否 | 廣告點擊連結 URL |
+| `items[].ads[].target_tags` | integer[] | 否 | 投放目標標籤 ID 陣列（`behavior_type=1`） |
+| `items[].ads[].exclude_tags` | integer[] | 否 | 排除標籤 ID 陣列（`behavior_type=-1`） |
 | `notes` | string | 否 | 訂單備註 |
 
 ```json
@@ -317,7 +321,9 @@
         {
           "title": "春季促銷廣告",
           "description": "限時優惠，全館 5 折",
-          "link_url": "https://example.com/promo"
+          "link_url": "https://example.com/promo",
+          "target_tags": [1, 3],
+          "exclude_tags": [5]
         }
       ]
     }
@@ -362,7 +368,7 @@
         "name": "Test User",
         "email": "test@example.com"
       },
-      "items": [ ... ],
+      "items": [ "..." ],
       "payment_logs": [],
       "notes": "備註資訊",
       "created_at": "2025-12-16 10:00:00",
@@ -372,10 +378,47 @@
       {
         "id": 1,
         "title": "春季促銷廣告",
+        "description": "限時優惠，全館 5 折",
+        "link_url": "https://example.com/promo",
+        "image_path": null,
         "status": "draft",
-        "order_item_id": 1
+        "target_tags": [
+          { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+        ],
+        "exclude_tags": [
+          { "id": 5, "name": "兒童", "raw_name": "children", "type": "demographic", "is_targetable": true, "description": null }
+        ],
+        "review": {
+          "rejection_reason": null,
+          "reviewed_by": null,
+          "submitted_at": null,
+          "approved_at": null
+        },
+        "schedule": {
+          "starts_at": null,
+          "expires_at": null
+        },
+        "owner": {
+          "type": "User",
+          "id": 1
+        },
+        "order_item_id": 1,
+        "created_at": "2025-12-16 10:00:00",
+        "updated_at": "2025-12-16 10:00:00"
       }
     ]
+  }
+}
+```
+
+### Response 422 - 廣告數量超過訂單項目數量
+
+```json
+{
+  "success": false,
+  "message": "驗證失敗",
+  "errors": {
+    "items.0.ads": ["第 1 項的廣告數量（2）不可超過購買數量（1）"]
   }
 }
 ```

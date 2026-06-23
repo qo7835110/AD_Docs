@@ -59,14 +59,36 @@ pending_review (待審核)
       "title": "春季促銷廣告",
       "description": "限時優惠，全館 5 折",
       "link_url": "https://example.com/promo",
+      "image_path": "ads/ad_1.jpg",
       "status": "draft",
+      "target_tags": [
+        { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+      ],
+      "exclude_tags": [],
+      "review": {
+        "rejection_reason": null,
+        "reviewed_by": null,
+        "submitted_at": null,
+        "approved_at": null
+      },
+      "schedule": {
+        "starts_at": null,
+        "expires_at": null
+      },
+      "owner": {
+        "type": "User",
+        "id": 5
+      },
       "order_item_id": 1,
-      "files": [],
-      "created_at": "2025-03-01T10:00:00+08:00"
+      "created_at": "2025-03-01 10:00:00",
+      "updated_at": "2025-03-01 10:00:00"
     }
   ]
 }
 ```
+
+> `target_tags` / `exclude_tags`：廣告的投放目標標籤與排除標籤物件陣列。
+> `review.reviewer_name`、`order_item`、`files` 僅在詳情端點中回傳（需載入關聯）。
 
 ---
 
@@ -93,15 +115,46 @@ pending_review (待審核)
     "title": "春季促銷廣告",
     "description": "限時優惠，全館 5 折",
     "link_url": "https://example.com/promo",
+    "image_path": "ads/ad_1.jpg",
     "status": "draft",
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [
+      { "id": 5, "name": "兒童", "raw_name": "children", "type": "demographic", "is_targetable": true, "description": null }
+    ],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": null,
+      "reviewer_name": null,
+      "submitted_at": null,
+      "approved_at": null
+    },
+    "schedule": {
+      "starts_at": null,
+      "expires_at": null
+    },
+    "owner": {
+      "type": "User",
+      "id": 5
+    },
     "order_item_id": 1,
     "order_item": {
       "id": 1,
-      "plan_option_id": 1,
-      "quantity": 1
+      "plan_option_id": 2,
+      "item_name": "基本方案 - 30天",
+      "item_description": null,
+      "quantity": 1,
+      "unit_price": 1000.0,
+      "subtotal": 1000.0,
+      "validity": {
+        "duration_days": 30,
+        "valid_start_date": "2025-03-01",
+        "valid_end_date": "2025-03-31"
+      },
+      "metadata": null,
+      "created_at": "2025-03-01 10:00:00"
     },
-    "reviewer": null,
-    "rejected_reason": null,
     "files": [
       {
         "id": 1,
@@ -109,8 +162,8 @@ pending_review (待審核)
         "url": "https://example.com/storage/ads/ad_image.jpg"
       }
     ],
-    "created_at": "2025-03-01T10:00:00+08:00",
-    "updated_at": "2025-03-01T10:00:00+08:00"
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-01 10:00:00"
   }
 }
 ```
@@ -154,9 +207,33 @@ pending_review (待審核)
   "data": {
     "id": 1,
     "title": "春季促銷廣告",
+    "description": "限時優惠，全館 5 折",
+    "link_url": "https://example.com/promo",
+    "image_path": null,
     "status": "draft",
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [
+      { "id": 5, "name": "兒童", "raw_name": "children", "type": "demographic", "is_targetable": true, "description": null }
+    ],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": null,
+      "submitted_at": null,
+      "approved_at": null
+    },
+    "schedule": {
+      "starts_at": null,
+      "expires_at": null
+    },
+    "owner": {
+      "type": "User",
+      "id": 5
+    },
     "order_item_id": 1,
-    "created_at": "2025-03-01T10:00:00+08:00"
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-01 10:00:00"
   }
 }
 ```
@@ -214,7 +291,33 @@ pending_review (待審核)
   "data": {
     "id": 1,
     "title": "修改後的廣告標題",
-    "status": "draft"
+    "description": "更新後的說明",
+    "link_url": "https://example.com/new-promo",
+    "image_path": "ads/ad_1.jpg",
+    "status": "draft",
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [
+      { "id": 5, "name": "兒童", "raw_name": "children", "type": "demographic", "is_targetable": true, "description": null }
+    ],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": null,
+      "submitted_at": null,
+      "approved_at": null
+    },
+    "schedule": {
+      "starts_at": null,
+      "expires_at": null
+    },
+    "owner": {
+      "type": "User",
+      "id": 5
+    },
+    "order_item_id": 1,
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-02 09:00:00"
   }
 }
 ```
@@ -260,14 +363,36 @@ pending_review (待審核)
   "data": {
     "id": 1,
     "title": "春季促銷廣告",
+    "description": "限時優惠，全館 5 折",
+    "link_url": "https://example.com/promo",
+    "image_path": "ads/ad_1.jpg",
     "status": "draft",
+    "target_tags": [],
+    "exclude_tags": [],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": null,
+      "submitted_at": null,
+      "approved_at": null
+    },
+    "schedule": {
+      "starts_at": null,
+      "expires_at": null
+    },
+    "owner": {
+      "type": "User",
+      "id": 5
+    },
+    "order_item_id": 1,
     "files": [
       {
         "id": 10,
         "file_name": "ad_image.jpg",
         "url": "https://example.com/storage/ads/ad_image.jpg"
       }
-    ]
+    ],
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-01 10:00:00"
   }
 }
 ```
@@ -281,6 +406,8 @@ pending_review (待審核)
 將廣告由 `draft` 或 `rejected` 狀態提交至 `pending_review`，等待管理員審核。
 
 > 建議在提交前已上傳廣告圖片，否則可能被退回。
+>
+> **數量限制**：同一訂單項目下，狀態不為 `rejected` 的廣告總數不可超過該訂單項目的 `quantity`。超出時回傳 422。
 
 ### Path Parameters
 
@@ -301,8 +428,52 @@ pending_review (待審核)
   "data": {
     "id": 1,
     "title": "春季促銷廣告",
-    "status": "pending_review"
+    "description": "限時優惠，全館 5 折",
+    "link_url": "https://example.com/promo",
+    "image_path": "ads/ad_1.jpg",
+    "status": "pending_review",
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": null,
+      "submitted_at": "2025-03-02 09:30:00",
+      "approved_at": null
+    },
+    "schedule": {
+      "starts_at": null,
+      "expires_at": null
+    },
+    "owner": {
+      "type": "User",
+      "id": 5
+    },
+    "order_item_id": 1,
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-02 09:30:00"
   }
+}
+```
+
+### Response 422 - 超出廣告數量上限
+
+```json
+{
+  "success": false,
+  "message": "此訂單項目的廣告數量已達上限（1）",
+  "data": null
+}
+```
+
+### Response 400 - 狀態不允許提交
+
+```json
+{
+  "success": false,
+  "message": "目前狀態不允許提交審核",
+  "data": null
 }
 ```
 

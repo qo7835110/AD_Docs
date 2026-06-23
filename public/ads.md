@@ -39,34 +39,14 @@
         "description": "限時優惠，全館 5 折",
         "link_url": "https://example.com/promo",
         "image_path": "ads/ad_1.jpg",
-        "status": "active",
-        "review": {
-          "rejection_reason": null,
-          "reviewed_by": 2,
-          "reviewer_name": "管理員 A",
-          "submitted_at": "2025-02-18 09:00:00",
-          "approved_at": "2025-02-19 11:30:00"
-        },
-        "schedule": {
-          "starts_at": "2025-03-01 00:00:00",
-          "expires_at": "2025-03-31 23:59:59"
-        },
-        "owner": {
-          "type": "User",
-          "id": 5,
-          "name": "王小明",
-          "email": "wang@example.com"
-        },
-        "order_item_id": 10,
-        "order_item": null,
+        "starts_at": "2025-03-01 00:00:00",
+        "expires_at": "2025-03-31 23:59:59",
         "files": [
           {
             "id": 10,
             "url": "https://example.com/storage/ads/ad_1.jpg"
           }
-        ],
-        "created_at": "2025-02-20 10:00:00",
-        "updated_at": "2025-02-21 08:00:00"
+        ]
       }
     ],
     "pagination": {
@@ -105,29 +85,9 @@
     "description": "限時優惠，全館 5 折",
     "link_url": "https://example.com/promo",
     "image_path": "ads/ad_1.jpg",
-    "status": "active",
-    "review": {
-      "rejection_reason": null,
-      "reviewed_by": 2,
-      "reviewer_name": "管理員 A",
-      "submitted_at": "2025-02-18 09:00:00",
-      "approved_at": "2025-02-19 11:30:00"
-    },
-    "schedule": {
-      "starts_at": "2025-03-01 00:00:00",
-      "expires_at": "2025-03-31 23:59:59"
-    },
-    "owner": {
-      "type": "User",
-      "id": 5,
-      "name": "王小明",
-      "email": "wang@example.com"
-    },
-    "order_item_id": 10,
-    "order_item": null,
-    "files": [],
-    "created_at": "2025-02-20 10:00:00",
-    "updated_at": "2025-02-21 08:00:00"
+    "starts_at": "2025-03-01 00:00:00",
+    "expires_at": "2025-03-31 23:59:59",
+    "files": []
   }
 }
 ```

@@ -40,19 +40,37 @@
     {
       "id": 1,
       "title": "春季促銷廣告",
+      "description": "限時優惠，全館 5 折",
+      "link_url": "https://example.com/promo",
+      "image_path": "ads/ad_1.jpg",
       "status": "pending_review",
+      "target_tags": [
+        { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+      ],
+      "exclude_tags": [],
+      "review": {
+        "rejection_reason": null,
+        "reviewed_by": null,
+        "submitted_at": "2025-02-18 09:00:00",
+        "approved_at": null
+      },
+      "schedule": {
+        "starts_at": null,
+        "expires_at": null
+      },
       "owner": {
-        "id": 5,
-        "name": "王小明",
-        "email": "user@example.com"
+        "type": "User",
+        "id": 5
       },
       "order_item_id": 1,
-      "files": [],
-      "created_at": "2025-03-01T10:00:00+08:00"
+      "created_at": "2025-03-01 10:00:00",
+      "updated_at": "2025-03-01 10:00:00"
     }
   ]
 }
 ```
+
+> 列表端點未載入 `owner` 關聯，因此 `owner.name` / `owner.email` 不會出現；如需完整擁有者資訊請使用詳情端點。
 
 ---
 
@@ -77,21 +95,46 @@
     "title": "春季促銷廣告",
     "description": "限時優惠，全館 5 折",
     "link_url": "https://example.com/promo",
+    "image_path": "ads/ad_1.jpg",
     "status": "pending_review",
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": null,
+      "reviewer_name": null,
+      "submitted_at": "2025-02-18 09:00:00",
+      "approved_at": null
+    },
+    "schedule": {
+      "starts_at": "2025-03-01 00:00:00",
+      "expires_at": "2025-03-31 23:59:59"
+    },
     "owner": {
+      "type": "User",
       "id": 5,
       "name": "王小明",
       "email": "user@example.com"
     },
+    "order_item_id": 1,
     "order_item": {
       "id": 1,
-      "order": {
-        "id": 1,
-        "order_number": "ORD20251216ABCD1234"
-      }
+      "plan_option_id": 2,
+      "item_name": "基本方案 - 30天",
+      "item_description": null,
+      "quantity": 1,
+      "unit_price": 1000.0,
+      "subtotal": 1000.0,
+      "validity": {
+        "duration_days": 30,
+        "valid_start_date": "2025-03-01",
+        "valid_end_date": "2025-03-31"
+      },
+      "metadata": null,
+      "created_at": "2025-02-15 10:00:00"
     },
-    "reviewer": null,
-    "rejected_reason": null,
     "files": [
       {
         "id": 10,
@@ -99,7 +142,8 @@
         "url": "https://example.com/storage/ads/ad_image.jpg"
       }
     ],
-    "created_at": "2025-03-01T10:00:00+08:00"
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-01 10:00:00"
   }
 }
 ```
@@ -131,11 +175,31 @@
   "data": {
     "id": 1,
     "title": "春季促銷廣告",
+    "description": "限時優惠，全館 5 折",
+    "link_url": "https://example.com/promo",
+    "image_path": "ads/ad_1.jpg",
     "status": "approved",
-    "reviewer": {
-      "id": 1,
-      "name": "系統管理員"
-    }
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": 1,
+      "submitted_at": "2025-02-18 09:00:00",
+      "approved_at": "2025-02-19 11:30:00"
+    },
+    "schedule": {
+      "starts_at": "2025-03-01 00:00:00",
+      "expires_at": "2025-03-31 23:59:59"
+    },
+    "owner": {
+      "type": "User",
+      "id": 5
+    },
+    "order_item_id": 1,
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-02-19 11:30:00"
   }
 }
 ```
@@ -184,8 +248,32 @@
   "message": "廣告審核已拒絕",
   "data": {
     "id": 1,
+    "title": "春季促銷廣告",
+    "description": "限時優惠，全館 5 折",
+    "link_url": "https://example.com/promo",
+    "image_path": "ads/ad_1.jpg",
     "status": "rejected",
-    "rejected_reason": "圖片不符合廣告規範，請重新上傳"
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [],
+    "review": {
+      "rejection_reason": "圖片不符合廣告規範，請重新上傳",
+      "reviewed_by": 1,
+      "submitted_at": "2025-02-18 09:00:00",
+      "approved_at": null
+    },
+    "schedule": {
+      "starts_at": null,
+      "expires_at": null
+    },
+    "owner": {
+      "type": "User",
+      "id": 5
+    },
+    "order_item_id": 1,
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-02-19 14:00:00"
   }
 }
 ```
@@ -216,7 +304,26 @@
   "message": "廣告已上架",
   "data": {
     "id": 1,
-    "status": "active"
+    "title": "春季促銷廣告",
+    "status": "active",
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": 1,
+      "submitted_at": "2025-02-18 09:00:00",
+      "approved_at": "2025-02-19 11:30:00"
+    },
+    "schedule": {
+      "starts_at": "2025-03-01 00:00:00",
+      "expires_at": "2025-03-31 23:59:59"
+    },
+    "owner": { "type": "User", "id": 5 },
+    "order_item_id": 1,
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-01 00:00:00"
   }
 }
 ```
@@ -247,7 +354,26 @@
   "message": "廣告已下架",
   "data": {
     "id": 1,
-    "status": "inactive"
+    "title": "春季促銷廣告",
+    "status": "inactive",
+    "target_tags": [
+      { "id": 1, "name": "科技愛好者", "raw_name": "tech", "type": "interest", "is_targetable": true, "description": null }
+    ],
+    "exclude_tags": [],
+    "review": {
+      "rejection_reason": null,
+      "reviewed_by": 1,
+      "submitted_at": "2025-02-18 09:00:00",
+      "approved_at": "2025-02-19 11:30:00"
+    },
+    "schedule": {
+      "starts_at": "2025-03-01 00:00:00",
+      "expires_at": "2025-03-31 23:59:59"
+    },
+    "owner": { "type": "User", "id": 5 },
+    "order_item_id": 1,
+    "created_at": "2025-03-01 10:00:00",
+    "updated_at": "2025-03-20 15:00:00"
   }
 }
 ```
